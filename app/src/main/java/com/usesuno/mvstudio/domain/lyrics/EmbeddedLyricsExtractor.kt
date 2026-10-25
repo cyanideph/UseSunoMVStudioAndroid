@@ -37,7 +37,7 @@ class EmbeddedLyricsExtractor {
             var format = LyricsFormat.UNKNOWN
 
             for (i in 0..20) {
-                val value = retriever.extractMetadata(i)
+                val value = runCatching { retriever.extractMetadata(i) }.getOrNull()
                 if (value != null && value.isNotBlank() && looksLikeLyrics(value)) {
                     lyrics = value
                     format = detectFormat(value)
