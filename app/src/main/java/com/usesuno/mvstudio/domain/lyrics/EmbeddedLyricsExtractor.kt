@@ -31,36 +31,17 @@ class EmbeddedLyricsExtractor {
         try {
             retriever.setDataSource(context, uri)
 
-            // Try different metadata keys for lyrics
-            val lyricsCandidates = listOf(
-                "LYRICS",
-                "SYLT", // Synced lyrics
-                "USLT", // Unsynced lyrics
-                "LYRICS",
-                "\u00A9lyr", // iTunes
-            )
-
+            // Android exposes standard metadata keys as integer constants, not ID3 frame names.
+            // Scan available metadata slots and accept only values that resemble lyrics.
             var lyrics: String? = null
             var format = LyricsFormat.UNKNOWN
 
-            for (key in lyricsCandidates) {
-                val value = retriever.extractMetadata(key)
-                if (value != null && value.isNotBlank()) {
+            for (i in 0..20) {
+                val value = retriever.extractMetadata(i)
+                if (value != null && value.isNotBlank() && looksLikeLyrics(value)) {
                     lyrics = value
                     format = detectFormat(value)
                     break
-                }
-            }
-
-            // Also check for embedded LRC in other tags
-            if (lyrics == null) {
-                for (i in 0..20) {
-                    val value = retriever.extractMetadata(i)
-                    if (value != null && value.isNotBlank() && looksLikeLyrics(value)) {
-                        lyrics = value
-                        format = detectFormat(value)
-                        break
-                    }
                 }
             }
 
