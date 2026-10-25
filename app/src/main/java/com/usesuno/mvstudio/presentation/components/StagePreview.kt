@@ -17,7 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.Rect
+import android.graphics.Rect
 import androidx.compose.ui.unit.dp
 import com.usesuno.mvstudio.domain.model.Project
 import com.usesuno.mvstudio.domain.model.AudioFrame
@@ -44,7 +44,7 @@ fun StagePreview(
         contentAlignment = Alignment.Center,
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
-            val bounds = Rect(0f, 0f, size.width, size.height)
+            val bounds = Rect(0, 0, size.width.toInt(), size.height.toInt())
             drawIntoCanvas { canvas ->
                 renderer?.renderFrame(canvas.nativeCanvas, currentTime, currentAudioFrame, bounds)
             }
