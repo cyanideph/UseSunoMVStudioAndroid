@@ -1,6 +1,8 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.compose")
+    id("org.jetbrains.kotlin.plugin.serialization")
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
     id("org.jetbrains.kotlin.plugin.parcelize")
@@ -20,6 +22,15 @@ android {
         multiDexEnabled = true
     }
 
+    signingConfigs {
+        create("debugConfig") {
+            storeFile = file("${rootDir}/debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -27,6 +38,7 @@ android {
         }
         debug {
             isDebuggable = true
+            signingConfig = signingConfigs.getByName("debugConfig")
         }
     }
 
@@ -40,9 +52,6 @@ android {
         freeCompilerArgs += listOf("-Xopt-in=kotlin.RequiresOptIn")
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = "2.0.21"
-    }
 
     packaging {
         resources {
@@ -93,12 +102,11 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.1")
 
-    // Media / ExoPlayer
-    implementation("com.google.android.exoplayer:exoplayer:2.19.1")
-    implementation("com.google.android.exoplayer:exoplayer-datasource-okhttp:2.19.1")
+    // Media / ExoPlayer (unused)
+    // implementation("com.google.android.exoplayer:exoplayer:2.19.1")
 
-    // Image loading
-    implementation("io.coil-kt:coil-compose:3.2.0")
+    // Image loading (unused)
+    // implementation("io.coil-kt:coil-compose:3.2.0")
 
     // Serialization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
@@ -108,8 +116,8 @@ dependencies {
     implementation("com.squareup.okio:okio:3.9.0")
 
     // Audio analysis (FFT)
-    implementation("org.jtransforms:jtransforms:3.1")
-    implementation("be.tarsos:tarsosdsp-android:2.5")
+    implementation("com.github.wendykierp:JTransforms:3.1")
+    // implementation("be.tarsos:tarsosdsp-android:2.5")
 
     // WorkManager for background export
     implementation("androidx.work:work-runtime-ktx:2.9.1")

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -15,8 +16,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -42,6 +45,7 @@ import com.usesuno.mvstudio.presentation.components.StagePreview
 import com.usesuno.mvstudio.presentation.components.ExportDialog
 import com.usesuno.mvstudio.ui.theme.UseSunoMVStudioTheme
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditorScreen(
     project: Project,
@@ -63,8 +67,8 @@ fun EditorScreen(
                 TopAppBar(
                     title = { Text(project.name, fontSize = 18.sp) },
                     modifier = Modifier.fillMaxWidth(),
-                    colors = TopAppBarDefaults.mediumTopAppBarColors(
-                        containerColor = UseSunoMVStudioTheme.colorScheme.surfaceContainer
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainer
                     ),
                     navigationIcon = {
                         IconButton(onClick = { /* Navigate back */ }) {
@@ -129,7 +133,7 @@ fun EditorScreen(
                         modifier = Modifier
                             .weight(1f, true)
                             .fillMaxHeight()
-                            .background(UseSunoMVStudioTheme.colorScheme.surfaceContainerHighest),
+                            .background(MaterialTheme.colorScheme.surfaceContainerHighest),
                     ) {
                         StagePreview(
                             project = project,
@@ -145,7 +149,7 @@ fun EditorScreen(
                             modifier = Modifier
                                 .width(360.dp)
                                 .fillMaxHeight()
-                                .background(UseSunoMVStudioTheme.colorScheme.surfaceContainer),
+                                .background(MaterialTheme.colorScheme.surfaceContainer),
                         )
                     }
                 }
@@ -158,7 +162,7 @@ fun EditorScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(200.dp)
-                            .background(UseSunoMVStudioTheme.colorScheme.surfaceContainerHighest),
+                            .background(MaterialTheme.colorScheme.surfaceContainerHighest),
                     )
                 }
             }

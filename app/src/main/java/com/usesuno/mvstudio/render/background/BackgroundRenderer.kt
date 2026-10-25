@@ -138,9 +138,9 @@ class ThemeSpaceRenderer : BackgroundRenderer {
 
     private fun pseudoRandom(seed: Long): Float {
         var s = seed
-        s ^= s shl 13
-        s ^= s ushr 7
-        s ^= s shl 17
+        s = s xor (s shl 13)
+        s = s xor (s ushr 7)
+        s = s xor (s shl 17)
         return (s and 0xFFFFFFFFL).toFloat() / 0xFFFFFFFFL
     }
 
@@ -486,10 +486,10 @@ class SpaceStarlightRenderer : BackgroundRenderer {
                 brightness = (Math.random() * 0.5 + 0.5).toFloat(),
                 twinklePhase = (Math.random() * 2 * PI).toFloat(),
                 color = when {
-                    Math.random() < 0.6 -> 0xFFFFFFFF // White
-                    Math.random() < 0.8 -> 0xFFFFFFAA // Yellow
-                    Math.random() < 0.9 -> 0xFFAAAAFF // Blue
-                    else -> 0xFFFF8888 // Red
+                    Math.random() < 0.6 -> (0xFFFFFFFF).toInt() // White
+                    Math.random() < 0.8 -> (0xFFFFFFAA).toInt() // Yellow
+                    Math.random() < 0.9 -> (0xFFAAAAFF).toInt() // Blue
+                    else -> (0xFFFF8888).toInt() // Red
                 },
             ))
         }
@@ -503,7 +503,7 @@ class SpaceStarlightRenderer : BackgroundRenderer {
             val alpha = (star.brightness * twinkle * 255 * star.z * (1f + audioPower * 0.3f)).toInt()
             val size = star.size * star.z * (1f + audioPower * 0.5f)
 
-            paint.color = (star.color and 0xFFFFFF) | (alpha shl 24)
+            paint.color = (star.color and 0xFFFFFF) or (alpha shl 24)
             canvas.drawCircle(star.x, star.y, size, paint)
         }
 

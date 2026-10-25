@@ -37,12 +37,4 @@ interface ProjectDao {
 
     @Query("SELECT COUNT(*) FROM projects WHERE isDraft = 0")
     suspend fun getProjectCount(): Int
-
-    @Transaction
-    suspend fun upsertWithAssets(project: ProjectEntity, assets: List<AssetEntity>) {
-        insert(project)
-        if (assets.isNotEmpty()) {
-            assetDao.insertAll(assets)
-        }
-    }
 }

@@ -1,0 +1,8 @@
+{
+  "name": "UseSuno MV Studio",
+  "description": "Music video generator and editor for lyrics and audio visualization with customizable templates.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

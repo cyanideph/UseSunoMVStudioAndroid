@@ -6,14 +6,19 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.material3.Material3
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.core.net.toFile
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewmodel.ViewModel
-import androidx.lifecycle.viewmodel.viewModelScope
+import androidx.lifecycle.viewModelScope
 import com.usesuno.mvstudio.data.persistence.ProjectBundleSerializer
 import com.usesuno.mvstudio.di.UseSunoMVStudioApplication
 import com.usesuno.mvstudio.domain.model.Project
@@ -21,13 +26,14 @@ import com.usesuno.mvstudio.domain.model.Template
 import com.usesuno.mvstudio.presentation.editor.EditorScreen
 import com.usesuno.mvstudio.ui.theme.UseSunoMVStudioTheme
 import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    private val viewModel: MainViewModel by hiltViewModel()
+    private val viewModel: MainViewModel by viewModels()
 
     @Inject
     lateinit var projectSerializer: ProjectBundleSerializer
@@ -37,20 +43,18 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             UseSunoMVStudioTheme {
-                Material3 {
-                    Surface(
-                        modifier = androidx.compose.ui.Modifier.fillMaxSize(),
-                        color = androidx.compose.material3.MaterialTheme.colorScheme.background,
-                    ) {
-                        EditorScreen(
-                            project = viewModel.currentProject,
-                            onProjectChange = { viewModel.updateProject(it) },
-                            onExportClick = { viewModel.startExport() },
-                            onSettingsClick = { /* Open settings */ },
-                            onImportAudioClick = { viewModel.importAudio() },
-                            onImportLyricsClick = { viewModel.importLyrics() },
-                        )
-                    }
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background,
+                ) {
+                    EditorScreen(
+                        project = viewModel.currentProject,
+                        onProjectChange = { viewModel.updateProject(it) },
+                        onExportClick = { viewModel.startExport() },
+                        onSettingsClick = { /* Open settings */ },
+                        onImportAudioClick = { viewModel.importAudio() },
+                        onImportLyricsClick = { viewModel.importLyrics() },
+                    )
                 }
             }
         }
@@ -87,7 +91,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@AndroidEntryPoint
+@HiltViewModel
 class MainViewModel @Inject constructor(
     private val projectSerializer: ProjectBundleSerializer,
 ) : ViewModel() {

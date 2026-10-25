@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Delete
+import com.usesuno.mvstudio.domain.model.AssetType
 import kotlinx.coroutines.flow.Flow
 
 @Dao

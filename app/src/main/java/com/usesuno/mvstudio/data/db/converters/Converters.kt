@@ -46,6 +46,12 @@ class Converters {
     fun toExportQuality(value: ExportQuality?): String? = value?.name
 
     @TypeConverter
+    fun fromAssetType(value: String?): AssetType? = value?.let { AssetType.valueOf(it) }
+
+    @TypeConverter
+    fun toAssetType(value: AssetType?): String? = value?.name
+
+    @TypeConverter
     fun fromIntArray(value: String?): List<Int>? = value?.let { json.decodeFromString<List<Int>>(it) }
 
     @TypeConverter
