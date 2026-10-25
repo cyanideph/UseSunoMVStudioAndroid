@@ -4,27 +4,22 @@ import android.content.Context
 import android.graphics.Typeface
 import android.os.Handler
 import android.os.Looper
-import androidx.core.provider.FontsContractCompat
 import androidx.core.provider.FontRequest
-import com.usesuno.mvstudio.domain.model.AssetType
+import androidx.core.provider.FontsContractCompat
 import com.usesuno.mvstudio.data.db.AssetEntity
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
-import java.util.concurrent.Executor
+import java.util.concurrent.ConcurrentHashMap
+import kotlin.coroutines.resume
 
-/**
- * Font manager for loading Google Fonts and local fonts
- */
+/** Loads downloadable Google Fonts and local font assets, with safe system fallbacks. */
 class FontManager(private val context: Context) {
+    private val fontCache = ConcurrentHashMap<String, Typeface>()
+    private val mainHandler = Handler(Looper.getMainLooper())
 
-    private val fontCache = mutableMapOf<String, Typeface>()
-    private val downloadExecutor = Executor { Runnable::run }
-
-    /**
-     * Predefined Google Fonts (matching web version)
-     */
     data class GoogleFont(
         val family: String,
         val variants: List<String>,
@@ -53,98 +48,78 @@ class FontManager(private val context: Context) {
         GoogleFont("Bebas Neue", listOf("400"), "display"),
     )
 
-    /**
-     * Load font from Google Fonts using Downloadable Fonts API
-     */
     suspend fun loadGoogleFont(family: String, weight: Int = 400): Typeface? {
-        val cacheKey = "$family-$weight"
-        return fontCache[cacheKey] ?: withContext(Dispatchers.IO) {
-            try {
-                // Use Downloadable Fonts API
-                val fontRequest = FontRequest(
-                    "com.google.android.gms.fonts",
-                    "com.google.android.gms",
-                    "$family:$weight",
-                    arrayOf() // Empty certificate array for Google Fonts provider
-                )
+        val key = "$family-$weight"
+        fontCache[key]?.let { return it }
 
-                val callback = object : FontsContractCompat.FontRequestCallback() {
-                    override fun onTypefaceRetrieved(typeface: Typeface) {
-                        fontCache[cacheKey] = typeface
-                    }
-
-                    override fun onTypefaceRequestFailed(reason: Int) {
-                        // Fallback to system font
-                    }
+        return suspendCancellableCoroutine { continuation ->
+            val request = FontRequest(
+                "com.google.android.gms.fonts",
+                "com.google.android.gms",
+                "$family:$weight",
+                emptyList(),
+            )
+            val callback = object : FontsContractCompat.FontRequestCallback() {
+                override fun onTypefaceRetrieved(typeface: Typeface) {
+                    fontCache[key] = typeface
+                    if (continuation.isActive) continuation.resume(typeface)
                 }
 
-                FontsContractCompat.requestFont(context, fontRequest, callback, Handler(Looper.getMainLooper()))
-
-                // Wait for callback (simplified - real implementation uses suspendCancellableCoroutine)
-                Thread.sleep(100)
-                fontCache[cacheKey]
-            } catch (e: Exception) {
-                null
+                override fun onTypefaceRequestFailed(reason: Int) {
+                    if (continuation.isActive) continuation.resume(null)
+                }
             }
-        }
-    }
 
-    /**
-     * Load local font from assets
-     */
-    suspend fun loadLocalFont(asset: AssetEntity): Typeface? {
-        val cacheKey = "local-${asset.id}"
-        return fontCache[cacheKey] ?: withContext(Dispatchers.IO) {
             try {
-                val file = File(context.cacheDir, "fonts/${asset.id}.${getFontExtension(asset.mimeType)}")
-                file.parentFile?.mkdirs()
-                FileOutputStream(file).use { it.write(asset.data) }
+                FontsContractCompat.requestFont(context, request, callback, mainHandler)
+            } catch (_: Exception) {
+                if (continuation.isActive) continuation.resume(null)
+            }
+        }
+    }
 
-                val typeface = Typeface.createFromFile(file)
-                fontCache[cacheKey] = typeface
-                typeface
-            } catch (e: Exception) {
+    suspend fun loadLocalFont(asset: AssetEntity): Typeface? {
+        val key = "local-${asset.id}"
+        fontCache[key]?.let { return it }
+
+        return withContext(Dispatchers.IO) {
+            try {
+                val fontsDir = File(context.cacheDir, "fonts").apply { mkdirs() }
+                val file = File(fontsDir, "${asset.id}.${getFontExtension(asset.mimeType)}")
+                FileOutputStream(file).use { it.write(asset.data) }
+                Typeface.createFromFile(file).also { fontCache[key] = it }
+            } catch (_: Exception) {
                 null
             }
         }
     }
 
-    /**
-     * Get font from cache or load
-     */
     suspend fun getFont(family: String, weight: Int, assetId: String? = null): Typeface {
-        val cacheKey = if (assetId != null) "local-$assetId" else "$family-$weight"
+        val key = if (assetId != null) "local-$assetId" else "$family-$weight"
+        fontCache[key]?.let { return it }
 
-        return fontCache.getOrPut(cacheKey) {
-            if (assetId != null) {
-                // Load from local asset (would need database lookup)
-                Typeface.create(family, weight)
-            } else {
-                loadGoogleFont(family, weight) ?: Typeface.create(family, weight)
-            }
+        // Asset lookup belongs to the caller; without an AssetEntity use a system fallback.
+        val typeface = if (assetId == null) {
+            loadGoogleFont(family, weight) ?: Typeface.create(family, weight, false)
+        } else {
+            Typeface.create(family, weight, false)
         }
+        fontCache.putIfAbsent(key, typeface)
+        return fontCache[key] ?: typeface
     }
 
-    /**
-     * Clear font cache
-     */
     fun clearCache() {
         fontCache.clear()
     }
 
-    private fun getFontExtension(mimeType: String): String = when (mimeType) {
+    private fun getFontExtension(mimeType: String): String = when (mimeType.lowercase()) {
         "font/ttf", "application/x-font-ttf" -> "ttf"
         "font/otf", "application/x-font-otf" -> "otf"
-        "font/woff" -> "woff"
-        "font/woff2" -> "woff2"
         else -> "ttf"
     }
 
-    /**
-     * Preload common fonts
-     */
     suspend fun preloadCommonFonts() {
-        val commonFonts = listOf(
+        listOf(
             "Inter" to 400,
             "Inter" to 600,
             "Roboto" to 400,
@@ -152,10 +127,6 @@ class FontManager(private val context: Context) {
             "Open Sans" to 400,
             "Montserrat" to 400,
             "Montserrat" to 700,
-        )
-
-        for ((family, weight) in commonFonts) {
-            loadGoogleFont(family, weight)
-        }
+        ).forEach { (family, weight) -> loadGoogleFont(family, weight) }
     }
 }
