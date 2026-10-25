@@ -1,6 +1,10 @@
 package com.usesuno.mvstudio.domain.audio
 
 import com.usesuno.mvstudio.domain.model.AudioAnalysis
+import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.sqrt
 
 /**
  * Waveform extraction for timeline display
