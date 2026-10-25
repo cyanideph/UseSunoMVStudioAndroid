@@ -2,21 +2,16 @@ package com.usesuno.mvstudio.render.templates
 
 import android.graphics.Canvas
 import android.graphics.Paint
-import android.graphics.Path
-import android.graphics.Rect
-import com.usesuno.mvstudio.domain.model.*
+import com.usesuno.mvstudio.domain.model.AudioFrame
+import com.usesuno.mvstudio.domain.model.Template
 import com.usesuno.mvstudio.render.engine.Canvas2DRenderer
-import kotlin.math.sin
-import kotlin.math.cos
 import kotlin.math.PI
-import kotlin.math.max
-import kotlin.math.min
+import kotlin.math.abs
+import kotlin.math.cos
+import kotlin.math.sin
 
-/**
- * Syzygy template - Planetary alignment with orbital mechanics
- */
+/** Planetary alignment with orbital mechanics. */
 class SyzygyRenderer : Canvas2DRenderer(Template.SYZYGY) {
-
     private val planets = mutableListOf<Planet>()
     private val orbits = mutableListOf<OrbitPath>()
     private val paint = Paint().apply { isAntiAlias = true; style = Paint.Style.FILL }
@@ -24,131 +19,96 @@ class SyzygyRenderer : Canvas2DRenderer(Template.SYZYGY) {
 
     data class Planet(
         var angle: Float,
-        var distance: Float,
-        var radius: Float,
-        var hue: Float,
-        var orbitalSpeed: Float,
-        var name: String,
+        val distance: Float,
+        val radius: Float,
+        val hue: Float,
+        val orbitalSpeed: Float,
+        val name: String,
+        var x: Float = 0f,
+        var y: Float = 0f,
     )
 
     data class OrbitPath(
-        var centerX: Float,
-        var centerY: Float,
-        var radius: Float,
-        var hue: Float,
+        val centerX: Float,
+        val centerY: Float,
+        val radius: Float,
+        val hue: Float,
     )
 
     override fun onInitialize() {
-        val centerX = bounds.centerX()
-        val centerY = bounds.centerY()
-
-        // Create central "sun"
-        planets.add(Planet(
-            angle = 0f,
-            distance = 0f,
-            radius = 40f,
-            hue = 50f, // Yellow
-            orbitalSpeed = 0f,
-            name = "Sun",
-        ))
-
-        // Create orbiting planets
+        val centerX = bounds.centerX().toFloat()
+        val centerY = bounds.centerY().toFloat()
+        planets.clear()
+        orbits.clear()
+        planets.add(Planet(0f, 0f, 40f, 50f, 0f, "Sun"))
         val planetData = listOf(
             Planet(0f, 120f, 8f, 200f, 0.02f, "Mercury"),
-            Planet(PI/4f, 180f, 12f, 30f, 0.015f, "Venus"),
-            Planet(PI/2f, 250f, 15f, 220f, 0.01f, "Earth"),
-            Planet(3*PI/4f, 330f, 10f, 10f, 0.008f, "Mars"),
-            Planet(PI, 450f, 25f, 40f, 0.005f, "Jupiter"),
-            Planet(5*PI/4f, 550f, 20f, 30f, 0.003f, "Saturn"),
+            Planet(PI.toFloat() / 4f, 180f, 12f, 30f, 0.015f, "Venus"),
+            Planet(PI.toFloat() / 2f, 250f, 15f, 220f, 0.01f, "Earth"),
+            Planet(3f * PI.toFloat() / 4f, 330f, 10f, 10f, 0.008f, "Mars"),
+            Planet(PI.toFloat(), 450f, 25f, 40f, 0.005f, "Jupiter"),
+            Planet(5f * PI.toFloat() / 4f, 550f, 20f, 30f, 0.003f, "Saturn"),
         )
-
-        for (p in planetData) {
-            p.centerX = centerX
-            p.centerY = centerY
-            planets.add(p)
-            orbits.add(OrbitPath(centerX, centerY, p.distance, p.hue))
-        }
+        planets.addAll(planetData)
+        planetData.forEach { orbits.add(OrbitPath(centerX, centerY, it.distance, it.hue)) }
     }
 
     override fun renderTemplate(canvas: Canvas, time: Double, audioFrame: AudioFrame?) {
-        val audioBass = audioFrame?.bass ?: 0f
-        val audioPower = audioFrame?.power ?: 0f
+        val bass = (audioFrame?.bass ?: 0f) * project.audioReactivityConfig.bassGain
+        val centerX = bounds.centerX().toFloat()
+        val centerY = bounds.centerY().toFloat()
 
-        val reactivity = project.audioReactivityConfig
-        val bassInfluence = audioBass * reactivity.bassGain
-
-        val centerX = bounds.centerX()
-        val centerY = bounds.centerY()
-
-        // Draw orbits
         for (orbit in orbits) {
-            orbitPaint.color = android.graphics.Color.HSVToColor(50, floatArrayOf(orbit.hue, 0.3f, 0.5f))
+            orbitPaint.color = android.graphics.Color.HSVToColor(
+                50, floatArrayOf(orbit.hue, 0.3f, 0.5f),
+            )
             canvas.drawCircle(orbit.centerX, orbit.centerY, orbit.radius, orbitPaint)
         }
 
-        // Update and draw planets
         for (planet in planets) {
-            if (planet.distance > 0) {
-                planet.angle += planet.orbitalSpeed * project.templateTuning.speed
-                // Bass speeds up orbits
-                planet.angle += bassInfluence * 0.01f
+            if (planet.distance > 0f) {
+                planet.angle += planet.orbitalSpeed * project.templateTuning.speed + bass * 0.01f
             }
+            planet.x = centerX + cos(planet.angle) * planet.distance
+            planet.y = centerY + sin(planet.angle) * planet.distance
 
-            val x = centerX + cos(planet.angle) * planet.distance
-            val y = centerY + sin(planet.angle) * planet.distance
-
-            planet.x = x
-            planet.y = y
-
-            // Draw planet
             val alpha = if (planet.distance == 0f) 255 else 200
-            val color = android.graphics.Color.HSVToColor(alpha, floatArrayOf(planet.hue, 0.7f, 0.9f))
-            paint.color = color
+            paint.color = android.graphics.Color.HSVToColor(alpha, floatArrayOf(planet.hue, 0.7f, 0.9f))
+            canvas.drawCircle(planet.x, planet.y, planet.radius * (1f + bass * 0.5f), paint)
 
-            canvas.drawCircle(x, y, planet.radius * (1f + bassInfluence * 0.5f), paint)
-
-            // Draw glow for sun
             if (planet.distance == 0f) {
-                val glowPaint = Paint(paint)
-                glowPaint.color = android.graphics.Color.HSVToColor(60, floatArrayOf(planet.hue, 0.5f, 1f))
-                canvas.drawCircle(x, y, planet.radius * 2f, glowPaint)
+                val glowPaint = Paint(paint).apply {
+                    color = android.graphics.Color.HSVToColor(60, floatArrayOf(planet.hue, 0.5f, 1f))
+                }
+                canvas.drawCircle(planet.x, planet.y, planet.radius * 2f, glowPaint)
             }
-
-            // Saturn ring
             if (planet.name == "Saturn") {
-                val ringPaint = Paint(paint)
-                ringPaint.style = Paint.Style.STROKE
-                ringPaint.strokeWidth = 3f
-                canvas.drawCircle(x, y, planet.radius * 1.8f, ringPaint)
+                val ringPaint = Paint(paint).apply {
+                    style = Paint.Style.STROKE
+                    strokeWidth = 3f
+                }
+                canvas.drawCircle(planet.x, planet.y, planet.radius * 1.8f, ringPaint)
             }
         }
-
-        // Draw alignment lines (syzygy)
-        drawAlignments(canvas, centerX, centerY)
+        drawAlignments(canvas)
     }
 
-    private fun drawAlignments(canvas: Canvas, centerX: Float, centerY: Float) {
+    private fun drawAlignments(canvas: Canvas) {
         val alignmentPaint = Paint().apply {
             isAntiAlias = true
             style = Paint.Style.STROKE
             strokeWidth = 1f
-            color = android.graphics.Color.parseColor("#FFFFFF20")
+            color = android.graphics.Color.parseColor("#20FFFFFF")
         }
-
-        // Check for near-alignments
-        val orbitingPlanets = planets.filter { it.distance > 0 }
-
-        for (i in 0 until orbitingPlanets.size) {
-            for (j in i + 1 until orbitingPlanets.size) {
-                val p1 = orbitingPlanets[i]
-                val p2 = orbitingPlanets[j]
-
-                val angleDiff = abs(p1.angle - p2.angle) % (2 * PI)
-                val aligned = angleDiff < 0.1 || angleDiff > 2 * PI - 0.1
-
-                if (aligned) {
+        val orbiting = planets.filter { it.distance > 0f }
+        for (i in 0 until orbiting.size) {
+            for (j in i + 1 until orbiting.size) {
+                val p1 = orbiting[i]
+                val p2 = orbiting[j]
+                val diff = abs(p1.angle - p2.angle) % (2f * PI.toFloat())
+                if (diff < 0.1f || diff > 2f * PI.toFloat() - 0.1f) {
                     alignmentPaint.strokeWidth = 2f
-                    alignmentPaint.color = android.graphics.Color.parseColor("#FFFFFF80")
+                    alignmentPaint.color = android.graphics.Color.parseColor("#80FFFFFF")
                     canvas.drawLine(p1.x, p1.y, p2.x, p2.y, alignmentPaint)
                 }
             }
