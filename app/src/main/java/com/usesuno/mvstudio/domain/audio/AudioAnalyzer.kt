@@ -16,7 +16,7 @@ class AudioAnalyzer(
     private val hopSize: Int = 512,
     private val targetFps: Int = 30,
 ) {
-    private val fft = DoubleFFT_1D(fftSize)
+    private val fft = DoubleFFT_1D(fftSize.toLong())
     private val window = createHannWindow(fftSize)
 
     /**

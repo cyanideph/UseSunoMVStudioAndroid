@@ -100,7 +100,7 @@ class FontManager(private val context: Context) {
                 file.parentFile?.mkdirs()
                 FileOutputStream(file).use { it.write(asset.data) }
 
-                val typeface = Typeface.createFromFile(file)
+                val typeface = Typeface.createFromFile(file) ?: return null
                 fontCache[cacheKey] = typeface
                 typeface
             } catch (e: Exception) {
