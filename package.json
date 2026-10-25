@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "github-mcp": "^0.0.7",
+    "github-mcp-custom": "^1.0.20"
+  }
+}

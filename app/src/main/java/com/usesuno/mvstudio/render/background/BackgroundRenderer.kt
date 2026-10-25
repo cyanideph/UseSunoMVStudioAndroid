@@ -5,6 +5,13 @@ import android.graphics.Rect
 import com.usesuno.mvstudio.domain.model.Background
 import com.usesuno.mvstudio.domain.model.BackgroundConfig
 import com.usesuno.mvstudio.domain.model.Project
+import com.usesuno.mvstudio.domain.model.AudioReactivityConfig
+import kotlin.math.abs
+import kotlin.math.cos
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.PI
+import kotlin.math.sin
 
 /**
  * Background renderer interface
@@ -71,10 +78,6 @@ class CustomBackgroundRenderer : BackgroundRenderer {
     override fun dispose() {
         bitmap?.recycle()
         bitmap = null
-    }
-
-    companion object {
-        private fun max(a: Float, b: Float): Float = if (a > b) a else b
     }
 }
 
@@ -157,6 +160,7 @@ class ThemeSpaceRenderer : BackgroundRenderer {
 class FluidLightRenderer : BackgroundRenderer {
     private val blobs = mutableListOf<FluidBlob>()
     private var config: BackgroundConfig = BackgroundConfig()
+    private var audioReactivityConfig: AudioReactivityConfig = AudioReactivityConfig()
     private val paint = android.graphics.Paint().apply { isAntiAlias = true; style = android.graphics.Paint.Style.FILL }
 
     data class FluidBlob(
@@ -171,6 +175,7 @@ class FluidLightRenderer : BackgroundRenderer {
 
     override fun initialize(config: BackgroundConfig, width: Int, height: Int, project: Project) {
         this.config = config
+        this.audioReactivityConfig = project.audioReactivityConfig
         repeat(8) { spawnBlob(width, height) }
     }
 
@@ -178,7 +183,7 @@ class FluidLightRenderer : BackgroundRenderer {
         val audioPower = audioFrame?.power ?: 0f
         val audioBass = audioFrame?.bass ?: 0f
 
-        val reactivity = project?.audioReactivityConfig ?: com.usesuno.mvstudio.domain.model.AudioReactivityConfig()
+        val reactivity = audioReactivityConfig
         val bassInfluence = audioBass * reactivity.bassGain
 
         for (blob in blobs) {

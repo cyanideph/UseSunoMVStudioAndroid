@@ -4,6 +4,8 @@ import com.usesuno.mvstudio.domain.model.LyricLine
 import com.usesuno.mvstudio.domain.model.LyricWord
 import com.usesuno.mvstudio.domain.model.Precision
 import java.util.UUID
+import java.util.regex.Pattern
+import kotlin.math.max
 
 /**
  * Lyrics segmentation and manipulation utilities

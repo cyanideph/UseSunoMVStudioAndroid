@@ -74,13 +74,13 @@ data class Project(
         updatedAt = parcel.readLong(),
         audioId = parcel.readString(),
         audioDuration = parcel.readDouble(),
-        audioWaveform = parcel.createFloatArray().toList(),
-        lines = parcel.createTypedArrayList(LyricLine.CREATOR),
+        audioWaveform = parcel.createFloatArray()?.toList() ?: emptyList(),
+        lines = parcel.createTypedArrayList(LyricLine.CREATOR) as List<LyricLine>,
         globalOffset = parcel.readDouble(),
         template = Template.valueOf(parcel.readString()!!),
-        templateTuning = parcel.readParcelable(TemplateTuning::class.java.classLoader)!!,
+        templateTuning = parcel.readParcelable(TemplateTuning::class.java.classLoader) as TemplateTuning,
         background = Background.valueOf(parcel.readString()!!),
-        backgroundConfig = parcel.readParcelable(BackgroundConfig::class.java.classLoader)!!,
+        backgroundConfig = parcel.readParcelable(BackgroundConfig::class.java.classLoader) as BackgroundConfig,
         aspectRatio = AspectRatio.valueOf(parcel.readString()!!),
         resolution = Resolution.valueOf(parcel.readString()!!),
         fontFamily = parcel.readString()!!,
@@ -99,7 +99,7 @@ data class Project(
         introDuration = parcel.readDouble(),
         introStyle = IntroStyle.valueOf(parcel.readString()!!),
         audioReactivityEnabled = parcel.readByte() != 0.toByte(),
-        audioReactivityConfig = parcel.readParcelable(AudioReactivityConfig::class.java.classLoader)!!,
+        audioReactivityConfig = parcel.readParcelable(AudioReactivityConfig::class.java.classLoader) as AudioReactivityConfig,
         exportFormat = ExportFormat.valueOf(parcel.readString()!!),
         exportFps = parcel.readInt(),
         exportQuality = ExportQuality.valueOf(parcel.readString()!!),
@@ -183,7 +183,7 @@ data class LyricLine(
         start = parcel.readDouble(),
         end = parcel.readDouble(),
         precision = Precision.valueOf(parcel.readString()!!),
-        words = parcel.createTypedArrayList(LyricWord.CREATOR),
+        words = parcel.createTypedArrayList(LyricWord.CREATOR) as List<LyricWord>,
         isBackground = parcel.readByte() != 0.toByte(),
         translation = parcel.readString(),
     )
@@ -261,8 +261,8 @@ enum class AspectRatio {
     RATIO_16_9, RATIO_9_16, RATIO_1_1, RATIO_4_3, RATIO_3_4
 }
 
-enum class Resolution {
-    P720, P1080, P1440, P2160
+enum class Resolution(val width: Int, val height: Int) {
+    P720(1280, 720), P1080(1920, 1080), P1440(2560, 1440), P2160(3840, 2160)
 }
 
 enum class ExportFormat {
@@ -294,7 +294,7 @@ data class TemplateTuning(
         colorShift = parcel.readFloat(),
         rotation = parcel.readFloat(),
         scale = parcel.readFloat(),
-        customParams = parcel.readHashMap(String::class.java, Float::class.java) as Map<String, Float>,
+        customParams = parcel.readHashMap(String::class.java.classLoader, String::class.java, Float::class.java) as Map<String, Float>,
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -341,7 +341,7 @@ data class BackgroundConfig(
         offsetX = parcel.readFloat(),
         offsetY = parcel.readFloat(),
         animationSpeed = parcel.readFloat(),
-        customParams = parcel.readHashMap(String::class.java, Float::class.java) as Map<String, Float>,
+        customParams = parcel.readHashMap(String::class.java.classLoader, String::class.java, Float::class.java) as Map<String, Float>,
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -422,8 +422,8 @@ data class AudioAnalysis(
     constructor(parcel: Parcel) : this(
         sampleRate = parcel.readInt(),
         duration = parcel.readDouble(),
-        frames = parcel.createTypedArrayList(AudioFrame.CREATOR),
-        waveform = parcel.createFloatArray().toList(),
+        frames = parcel.createTypedArrayList(AudioFrame.CREATOR) as List<AudioFrame>,
+        waveform = parcel.createFloatArray()?.toList() ?: emptyList(),
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {

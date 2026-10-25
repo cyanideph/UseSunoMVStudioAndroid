@@ -2,10 +2,12 @@ package com.usesuno.mvstudio.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.canvas.Canvas
+import androidx.compose.foundation.canvas.drawIntoCanvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -42,8 +44,10 @@ fun StagePreview(
         contentAlignment = Alignment.Center,
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
-            val bounds = Rect(0, 0, size.width.toInt(), size.height.toInt())
-            renderer?.renderFrame(this.nativeCanvas, currentTime, currentAudioFrame, bounds)
+            val bounds = Rect(0f, 0f, size.width, size.height)
+            drawIntoCanvas { canvas ->
+                renderer?.renderFrame(canvas.nativeCanvas, currentTime, currentAudioFrame, bounds)
+            }
         }
     }
 
@@ -61,20 +65,22 @@ fun StagePreview(
     }
 
     // Connect to playback clock
-    LaunchedEffect(playbackClock, audioAnalysis) {
+    DisposableEffect(playbackClock, audioAnalysis) {
+        var job: kotlinx.coroutines.Job? = null
+        var frameJob: kotlinx.coroutines.Job? = null
         if (playbackClock != null && audioAnalysis != null) {
-            val job = launch(Dispatchers.Main) {
+            job = launch(Dispatchers.Main) {
                 playbackClock.currentTime.collect { time ->
                     currentTime = time
                 }
             }
-            val frameJob = launch(Dispatchers.Main) {
+            frameJob = launch(Dispatchers.Main) {
                 // Would collect audio frames from playbackClock
             }
-            onDispose {
-                job.cancel()
-                frameJob.cancel()
-            }
+        }
+        onDispose {
+            job?.cancel()
+            frameJob?.cancel()
         }
     }
 }

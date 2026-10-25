@@ -7,11 +7,12 @@ import android.graphics.Rect
 import android.graphics.RectF
 import com.usesuno.mvstudio.domain.model.*
 import com.usesuno.mvstudio.render.engine.Canvas2DRenderer
-import kotlin.math.sin
 import kotlin.math.cos
-import kotlin.math.PI
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.PI
+import kotlin.math.sin
+import kotlin.math.sqrt
 
 /**
  * Fume template renderer - flowing particle/smoke effect with audio reactivity

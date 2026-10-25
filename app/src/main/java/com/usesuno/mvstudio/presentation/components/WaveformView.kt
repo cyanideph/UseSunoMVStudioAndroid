@@ -1,12 +1,12 @@
 package com.usesuno.mvstudio.presentation.components
 
-import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.Rect
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import androidx.compose.foundation.canvas.Canvas
+import androidx.compose.foundation.canvas.drawIntoCanvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -22,6 +22,8 @@ import androidx.compose.ui.unit.dp
 import com.usesuno.mvstudio.domain.model.LyricLine
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlin.math.abs
+import kotlin.math.max
 
 @Composable
 fun WaveformView(
@@ -50,7 +52,9 @@ fun WaveformView(
             // Loading state
         } else {
             Canvas(modifier = Modifier.fillMaxSize()) {
-                drawWaveform(this.nativeCanvas, size.width.toInt(), size.height.toInt(), waveformData!!, currentTime, duration, lines)
+                drawIntoCanvas { canvas ->
+                    drawWaveform(canvas.nativeCanvas, size.width.toInt(), size.height.toInt(), waveformData!!, currentTime, duration, lines)
+                }
             }
         }
     }
@@ -71,7 +75,7 @@ private fun extractWaveform(uri: Uri): FloatArray? {
 }
 
 private fun drawWaveform(
-    canvas: Canvas,
+    canvas: android.graphics.Canvas,
     width: Int,
     height: Int,
     waveform: FloatArray,
@@ -82,7 +86,7 @@ private fun drawWaveform(
     val paint = Paint().apply {
         isAntiAlias = true
         style = Paint.Style.FILL
-        color = Color.White
+        color = android.graphics.Color.WHITE
     }
 
     val centerY = height / 2f
@@ -111,7 +115,7 @@ private fun drawWaveform(
     // Draw current time marker
     val currentX = (currentTime / duration * width).toFloat()
     val markerPaint = Paint(paint).apply {
-        color = Color.Red
+        color = android.graphics.Color.RED
         strokeWidth = 2f
         style = Paint.Style.STROKE
         alpha = 255
@@ -120,7 +124,7 @@ private fun drawWaveform(
 
     // Draw lyric line markers
     val linePaint = Paint(paint).apply {
-        color = Color.Cyan
+        color = android.graphics.Color.CYAN
         strokeWidth = 1f
         style = Paint.Style.STROKE
         alpha = 180

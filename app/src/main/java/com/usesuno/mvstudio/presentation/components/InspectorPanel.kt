@@ -21,10 +21,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonItem
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -185,6 +185,7 @@ fun InspectorSection(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TemplateSelector(
     selectedTemplate: Template,
@@ -244,6 +245,7 @@ fun SliderRow(label: String, value: Float, min: Float, max: Float, onChange: (Fl
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BackgroundSelector(
     background: Background,
@@ -299,6 +301,7 @@ fun TypographyControls(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun IntroControls(
     enabled: Boolean,
@@ -313,12 +316,12 @@ fun IntroControls(
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text("Enabled")
             androidx.compose.material3.Switch(
                 checked = enabled,
                 onCheckedChange = onEnabledChange,
-                modifier = Modifier.align(Alignment.End),
             )
         }
 
@@ -353,12 +356,12 @@ fun AudioReactivityControls(
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text("Enabled")
             androidx.compose.material3.Switch(
                 checked = enabled,
                 onCheckedChange = onEnabledChange,
-                modifier = Modifier.align(Alignment.End),
             )
         }
 
@@ -374,6 +377,7 @@ fun AudioReactivityControls(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExportSettingsControls(
     format: ExportFormat,

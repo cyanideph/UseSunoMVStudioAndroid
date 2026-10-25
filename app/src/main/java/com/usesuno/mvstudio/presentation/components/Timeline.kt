@@ -43,7 +43,7 @@ fun Timeline(
     onProjectChange: (Project) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var scrubPosition by remember { mutableStateOf(0.0) }
+    var scrubPosition by remember { mutableStateOf(0.0f) }
     var isScrubbing by remember { mutableStateOf(false) }
 
     UseSunoMVStudioTheme {
@@ -78,7 +78,7 @@ fun Timeline(
                 onValueChangeFinished = {
                     isScrubbing = false
                     // Seek to position
-                    onProjectChange(project.copy(globalOffset = scrubPosition * project.audioDuration))
+                    onProjectChange(project.copy(globalOffset = scrubPosition.toDouble() * project.audioDuration))
                 },
                 colors = androidx.compose.material3.SliderDefaults.colors(
                     thumbColor = UseSunoMVStudioTheme.colorScheme.primary,
@@ -93,7 +93,7 @@ fun Timeline(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                Text(formatTime(scrubPosition * project.audioDuration), fontSize = 12.sp)
+                Text(formatTime(scrubPosition.toDouble() * project.audioDuration), fontSize = 12.sp)
                 Text(formatTime(project.audioDuration), fontSize = 12.sp)
             }
         }

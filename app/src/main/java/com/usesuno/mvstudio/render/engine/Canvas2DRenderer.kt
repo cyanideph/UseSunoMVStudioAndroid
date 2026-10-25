@@ -9,12 +9,14 @@ import com.usesuno.mvstudio.render.background.BackgroundRenderer
 import com.usesuno.mvstudio.render.background.BackgroundRendererFactory
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * Base Canvas 2D renderer for templates that use 2D canvas drawing
  */
 abstract class Canvas2DRenderer(
-    protected val template: Template,
+    override val template: Template,
 ) : RenderEngine {
 
     protected var project: Project = Project()

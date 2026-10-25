@@ -15,13 +15,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,11 +36,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.lifecycleScope
 import com.usesuno.mvstudio.domain.model.LyricLine
 import com.usesuno.mvstudio.domain.model.LyricWord
 import com.usesuno.mvstudio.domain.model.Project
 import com.usesuno.mvstudio.presentation.components.WaveformView
 import com.usesuno.mvstudio.ui.theme.UseSunoMVStudioTheme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun TimestampScreen(
@@ -66,18 +73,21 @@ fun TimestampScreen(
         }
     }
 
-    LaunchedEffect(isPlaying) {
+    DisposableEffect(isPlaying) {
+        var job: kotlinx.coroutines.Job? = null
         if (isPlaying) {
-            val job = androidx.lifecycle.coroutines.launch(androidx.lifecycle.CoroutineScope(androidx.lifecycle.lifecycleScope.coroutineContext)) {
+            job = lifecycleScope.launch {
                 while (isPlaying && currentTime < duration) {
                     currentTime = mediaPlayer.currentPosition / 1000.0
-                    androidx.compose.runtime.delay(50)
+                    delay(50)
                 }
                 if (currentTime >= duration) {
                     isPlaying = false
                 }
             }
-            onDispose { job.cancel() }
+        }
+        onDispose {
+            job?.cancel()
         }
     }
 
@@ -110,7 +120,7 @@ fun TimestampScreen(
                 Box(
                     modifier = Modifier
                         .weight(1f, true)
-                        .fillMaxHeight()
+                        .fillMaxSize()
                         .padding(16.dp),
                 ) {
                     Column(modifier = Modifier.fillMaxSize()) {
@@ -145,9 +155,12 @@ fun TimestampScreen(
                 Card(
                     modifier = Modifier
                         .width(400.dp)
-                        .fillMaxHeight()
+                        .fillMaxSize()
                         .padding(16.dp),
-                    elevation = 4.dp,
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                 ) {
                     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
                         Text(if (showWordTiming) "Word Timing" else "Line Timing", fontSize = 16.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
