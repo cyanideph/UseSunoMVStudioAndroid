@@ -103,14 +103,14 @@ class AuroraTraverseRenderer : Canvas2DRenderer(Template.AURORA_TRAVERSE) {
             var y = curtain.baseY + t * curtain.height
 
             // Main wave
-            y += sin(curtain.phase + t * 4 * PI) * curtain.height * 0.15f * curtain.intensity
+            y += (sin(curtain.phase + t * 4 * PI) * curtain.height * 0.15f * curtain.intensity).toFloat()
 
             // Secondary waves
-            y += sin(curtain.phase * 1.7f + t * 8 * PI) * curtain.height * 0.08f
-            y += sin(curtain.phase * 0.7f + t * 2 * PI) * curtain.height * 0.12f
+            y += (sin(curtain.phase * 1.7f + t * 8 * PI) * curtain.height * 0.08f).toFloat()
+            y += (sin(curtain.phase * 0.7f + t * 2 * PI) * curtain.height * 0.12f).toFloat()
 
             // Bass distortion
-            y += sin(curtain.phase * 3 + x * 0.01f) * bass * 30
+            y += (sin(curtain.phase * 3 + x * 0.01f) * bass * 30).toFloat()
 
             if (i == 0) {
                 path.moveTo(x, y)
@@ -121,9 +121,9 @@ class AuroraTraverseRenderer : Canvas2DRenderer(Template.AURORA_TRAVERSE) {
 
         // Draw glow behind
         val glowPath = Path(path)
-        val bottomY = curtain.baseY + curtain.height + 100
-        glowPath.lineTo(width, bottomY)
-        glowPath.lineTo(0, bottomY)
+        val bottomY = curtain.baseY + curtain.height + 100f
+        glowPath.lineTo(width.toFloat(), bottomY)
+        glowPath.lineTo(0f, bottomY)
         glowPath.close()
 
         val glowColor = android.graphics.Color.HSVToColor(30, floatArrayOf(curtain.hue, 0.8f, 0.9f))

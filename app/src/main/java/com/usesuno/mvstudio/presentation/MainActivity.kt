@@ -20,7 +20,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import com.usesuno.mvstudio.data.persistence.ProjectBundleSerializer
-import com.usesuno.mvstudio.data.persistence.ProjectBundleSerializer.Result
+import com.usesuno.mvstudio.data.persistence.Result
 import com.usesuno.mvstudio.di.UseSunoMVStudioApplication
 import com.usesuno.mvstudio.domain.model.Project
 import com.usesuno.mvstudio.domain.model.Template
@@ -83,7 +83,7 @@ class MainActivity : ComponentActivity() {
             if (file.extension == "lyricmv") {
                 lifecycleScope.launch {
                     val result = projectSerializer.importProject(file)
-                    if (result is ProjectBundleSerializer.Result.Success) {
+                    if (result is Result.Success) {
                         viewModel.updateProject(result.value)
                     }
                 }
@@ -127,7 +127,7 @@ class MainViewModel @Inject constructor(
     fun loadProject(projectId: String) {
         viewModelScope.launch {
             val result = projectSerializer.loadLocal(projectId)
-            if (result is ProjectBundleSerializer.Result.Success) {
+            if (result is Result.Success) {
                 result.value?.let { currentProject = it }
             }
         }

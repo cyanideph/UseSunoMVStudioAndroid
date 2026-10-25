@@ -11,6 +11,7 @@ import kotlin.math.cos
 import kotlin.math.PI
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.abs
 
 /**
  * Lumiere template - Cinematic light rays and lens flares
@@ -53,7 +54,7 @@ class LumiereRenderer : Canvas2DRenderer(Template.LUMIERE) {
         // Create light rays
         repeat(12) { i ->
             lightRays.add(LightRay(
-                angle = i * 2 * PI / 12f,
+                angle = (i * 2 * PI / 12f).toFloat(),
                 startRadius = 50f,
                 endRadius = max(width, height).toFloat() * 0.8f,
                 hue = (i * 30f).toFloat(),
@@ -74,8 +75,8 @@ class LumiereRenderer : Canvas2DRenderer(Template.LUMIERE) {
                 ))
             }
             flares.add(LensFlare(
-                x = centerX + (i - 1) * 300,
-                y = centerY,
+                x = bounds.centerX().toFloat() + (i - 1) * 300f,
+                y = bounds.centerY().toFloat(),
                 baseSize = (Math.random() * 50 + 30).toFloat(),
                 hue = (Math.random() * 60 + 30).toFloat(),
                 elements = elements,
@@ -92,8 +93,8 @@ class LumiereRenderer : Canvas2DRenderer(Template.LUMIERE) {
         val trebleInfluence = audioTreble * reactivity.trebleGain
         val powerInfluence = audioPower * reactivity.threshold
 
-        val centerX = bounds.centerX()
-        val centerY = bounds.centerY()
+        val centerX = bounds.centerX().toFloat()
+        val centerY = bounds.centerY().toFloat()
 
         // Draw light rays
         for (ray in lightRays) {
@@ -124,10 +125,10 @@ class LumiereRenderer : Canvas2DRenderer(Template.LUMIERE) {
 
         val width = 30f * ray.intensity * (1f + treble)
 
-        path.moveTo(cx + cosA * innerRadius - cosA90 * width / 2, cy + sinA * innerRadius - sinA90 * width / 2)
-        path.lineTo(cx + cosA * outerRadius - cosA90 * width / 2, cy + sinA * outerRadius - sinA90 * width / 2)
-        path.lineTo(cx + cosA * outerRadius + cosA90 * width / 2, cy + sinA * outerRadius + sinA90 * width / 2)
-        path.lineTo(cx + cosA * innerRadius + cosA90 * width / 2, cy + sinA * innerRadius + sinA90 * width / 2)
+        path.moveTo((cx + cosA * innerRadius - cosA90 * width / 2).toFloat(), (cy + sinA * innerRadius - sinA90 * width / 2).toFloat())
+        path.lineTo((cx + cosA * outerRadius - cosA90 * width / 2).toFloat(), (cy + sinA * outerRadius - sinA90 * width / 2).toFloat())
+        path.lineTo((cx + cosA * outerRadius + cosA90 * width / 2).toFloat(), (cy + sinA * outerRadius + sinA90 * width / 2).toFloat())
+        path.lineTo((cx + cosA * innerRadius + cosA90 * width / 2).toFloat(), (cy + sinA * innerRadius + sinA90 * width / 2).toFloat())
         path.close()
 
         val alpha = (ray.intensity * 100).toInt()
@@ -138,12 +139,12 @@ class LumiereRenderer : Canvas2DRenderer(Template.LUMIERE) {
 
     private fun drawLensFlare(canvas: Canvas, flare: LensFlare, cx: Float, cy: Float, treble: Float) {
         // Animate flare position
-        val flareX = flare.x + sin(timeOffset * 0.5 + flare.hue / 360f * 2 * PI) * 20 * treble
-        val flareY = flare.y + cos(timeOffset * 0.3 + flare.hue / 360f * 2 * PI) * 15 * treble
+        val flareX = (flare.x + sin(timeOffset * 0.5 + flare.hue / 360f * 2 * PI) * 20 * treble).toFloat()
+        val flareY = (flare.y + cos(timeOffset * 0.3 + flare.hue / 360f * 2 * PI) * 15 * treble).toFloat()
 
         for (element in flare.elements) {
-            val ex = flareX + cos(timeOffset + element.offset * 2 * PI) * element.size * 2
-            val ey = flareY + sin(timeOffset + element.offset * 2 * PI) * element.size
+            val ex = (flareX + cos(timeOffset + element.offset * 2 * PI) * element.size * 2).toFloat()
+            val ey = (flareY + sin(timeOffset + element.offset * 2 * PI) * element.size).toFloat()
 
             val alpha = (100 * (1f + treble)).toInt()
             val color = android.graphics.Color.HSVToColor(alpha, floatArrayOf(element.hue, 0.6f, 1f))
@@ -161,8 +162,8 @@ class LumiereRenderer : Canvas2DRenderer(Template.LUMIERE) {
         val path = Path()
         for (i in 0..5) {
             val angle = i * 2 * PI / 6f
-            val x = cx + cos(angle) * radius
-            val y = cy + sin(angle) * radius
+            val x = (cx + cos(angle) * radius).toFloat()
+            val y = (cy + sin(angle) * radius).toFloat()
             if (i == 0) path.moveTo(x, y) else path.lineTo(x, y)
         }
         path.close()
@@ -184,7 +185,7 @@ class LumiereRenderer : Canvas2DRenderer(Template.LUMIERE) {
             val y = centerY + (index - visibleLines.size / 2f) * lineHeight
 
             // Add vignette-aware alpha
-            val vignette = 1f - abs(index - visibleLines.size / 2f) / (visibleLines.size / 2f + 1) * 0.3f
+            val vignette = 1f - (abs(index.toFloat() - visibleLines.size / 2f) / (visibleLines.size / 2f + 1f)) * 0.3f
             textPaint.alpha = (255 * introProgress * vignette).toInt()
 
             canvas.drawText(line.text, centerX, y, textPaint)

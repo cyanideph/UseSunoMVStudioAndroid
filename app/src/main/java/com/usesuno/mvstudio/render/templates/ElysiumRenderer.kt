@@ -52,8 +52,8 @@ class ElysiumRenderer : Canvas2DRenderer(Template.ELYSIUM) {
         // Create golden spirals
         repeat(3) { i ->
             spirals.add(GoldenSpiral(
-                centerX = bounds.centerX() + (i - 1) * 300,
-                centerY = bounds.centerY(),
+                centerX = bounds.centerX().toFloat() + (i - 1) * 300f,
+                centerY = bounds.centerY().toFloat(),
                 rotation = (i * 2 * PI / 3).toFloat(),
                 scale = (80 + i * 40).toFloat(),
                 hue = (30 + i * 20).toFloat(), // Golden tones
@@ -87,8 +87,8 @@ class ElysiumRenderer : Canvas2DRenderer(Template.ELYSIUM) {
         }
 
         // Update particles
-        val centerX = bounds.centerX()
-        val centerY = bounds.centerY()
+        val centerX = bounds.centerX().toFloat()
+        val centerY = bounds.centerY().toFloat()
 
         for (particle in particles) {
             updateParticle(particle, time, bassInfluence, centerX, centerY)
@@ -136,7 +136,7 @@ class ElysiumRenderer : Canvas2DRenderer(Template.ELYSIUM) {
         centerX: Float,
         centerY: Float,
     ) {
-        val dt = 1.0 / 30.0
+        val dt = 1f / 30f
 
         // Drift outward slowly
         val dx = particle.x - centerX
@@ -183,8 +183,8 @@ class ElysiumRenderer : Canvas2DRenderer(Template.ELYSIUM) {
             val t = i * turns * 2 * PI / points + spiral.phase
             val r = spiral.scale * pow(phi, t / (2 * PI)).toFloat() * (1f + bass * 0.3f)
 
-            val x = spiral.centerX + cos(t + spiral.rotation) * r
-            val y = spiral.centerY + sin(t + spiral.rotation) * r
+            val x = (spiral.centerX + cos(t + spiral.rotation) * r).toFloat()
+            val y = (spiral.centerY + sin(t + spiral.rotation) * r).toFloat()
 
             if (i == 0) {
                 path.moveTo(x, y)

@@ -44,8 +44,8 @@ class CappellaRenderer : Canvas2DRenderer(Template.CAPPELLA) {
         }
         lastVocalLevel = vocalInfluence
 
-        val centerX = bounds.centerX()
-        val centerY = bounds.centerY()
+        val centerX = bounds.centerX().toFloat()
+        val centerY = bounds.centerY().toFloat()
 
         for (ring in rings) {
             ring.radius += 30f * (1f / 30f) * project.templateTuning.speed

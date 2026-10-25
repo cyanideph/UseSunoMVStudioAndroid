@@ -30,7 +30,7 @@ class KyotoRenderer : Canvas2DRenderer(Template.KYOTO) {
         var life: Float,
         var maxLife: Float,
     ) {
-        data class Point(val x: Float, val y: Float, val pressure: Float)
+        data class Point(var x: Float, var y: Float, val pressure: Float)
     }
 
     override fun onInitialize() {
@@ -94,7 +94,7 @@ class KyotoRenderer : Canvas2DRenderer(Template.KYOTO) {
     }
 
     private fun updateStroke(stroke: InkStroke, time: Double, midInfluence: Float) {
-        val dt = 1.0 / 30.0
+        val dt = 1f / 30f
 
         // Flow horizontally
         for (point in stroke.points) {

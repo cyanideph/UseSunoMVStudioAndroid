@@ -71,8 +71,8 @@ class FumeRenderer : Canvas2DRenderer(Template.FUME) {
         }
 
         // Update and draw particles
-        val centerX = bounds.centerX()
-        val centerY = bounds.centerY()
+        val centerX = bounds.centerX().toFloat()
+        val centerY = bounds.centerY().toFloat()
         val radius = min(width, height) * 0.35f
 
         for (particle in particles) {
@@ -129,7 +129,7 @@ class FumeRenderer : Canvas2DRenderer(Template.FUME) {
         centerY: Float,
         radius: Float,
     ) {
-        val dt = 1.0 / 30.0 // Fixed timestep
+        val dt = 1f / 30f // Fixed timestep
 
         // Audio-reactive forces
         val dx = particle.x - centerX
@@ -146,8 +146,8 @@ class FumeRenderer : Canvas2DRenderer(Template.FUME) {
         // Swirl motion
         val swirlAngle = (time * 0.5 + particle.hue / 360.0 * PI * 2).toFloat()
         val swirlForce = 30f * project.templateTuning.speed
-        particle.vx += cos(swirlAngle) * swirlForce * dt
-        particle.vy += sin(swirlAngle) * swirlForce * dt
+        particle.vx += (cos(swirlAngle) * swirlForce * dt).toFloat()
+        particle.vy += (sin(swirlAngle) * swirlForce * dt).toFloat()
 
         // Damping
         particle.vx *= 0.98f
@@ -158,7 +158,7 @@ class FumeRenderer : Canvas2DRenderer(Template.FUME) {
         particle.y += particle.vy * dt
 
         // Boundary constraint
-        val newDist = sqrt((particle.x - centerX).pow(2) + (particle.y - centerY).pow(2))
+        val newDist = sqrt((particle.x - centerX) * (particle.x - centerX) + (particle.y - centerY) * (particle.y - centerY))
         if (newDist > radius) {
             val nx = (particle.x - centerX) / newDist
             val ny = (particle.y - centerY) / newDist

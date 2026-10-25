@@ -7,6 +7,7 @@ import android.graphics.Typeface
 import com.usesuno.mvstudio.domain.model.*
 import com.usesuno.mvstudio.render.background.BackgroundRenderer
 import com.usesuno.mvstudio.render.background.BackgroundRendererFactory
+import com.usesuno.mvstudio.render.templates.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlin.math.max
@@ -79,7 +80,7 @@ abstract class Canvas2DRenderer(
     private fun updateTypography() {
         val scale = min(width, height) / 1080.0f
         textPaint.textSize = project.fontSize * 64 * scale
-        textPaint.typeface = Typeface.create(project.fontFamily, project.fontWeight, false)
+        textPaint.typeface = Typeface.create(project.fontFamily, Typeface.NORMAL)
         textPaint.color = android.graphics.Color.parseColor(project.textColor)
 
         if (project.strokeWidth > 0) {
@@ -142,8 +143,8 @@ abstract class Canvas2DRenderer(
         val visibleLines = project.lines.filter { it.start <= time && it.end >= time }
         if (visibleLines.isEmpty()) return
 
-        val centerX = bounds.centerX()
-        val centerY = bounds.centerY()
+        val centerX = bounds.centerX().toFloat()
+        val centerY = bounds.centerY().toFloat()
         val lineHeight = textPaint.textSize * project.lineHeight
 
         for ((index, line) in visibleLines.withIndex()) {
@@ -170,18 +171,15 @@ abstract class Canvas2DRenderer(
         return when (project.introStyle) {
             IntroStyle.FADE -> progress
             IntroStyle.SLIDE_UP -> {
-                val delay = lineIndex * 0.1
+                val delay = lineIndex * 0.1f
                 max(0f, min(1f, (progress - delay) / (1f - delay)))
             }
             IntroStyle.SLIDE_DOWN -> {
-                val delay = (totalLines - lineIndex - 1) * 0.1
+                val delay = (totalLines - lineIndex - 1) * 0.1f
                 max(0f, min(1f, (progress - delay) / (1f - delay)))
             }
             IntroStyle.ZOOM -> progress * progress
-            IntroStyle.TYPEWRITER -> {
-                val charProgress = progress * line.text.length
-                min(1f, charProgress / line.text.length)
-            }
+            IntroStyle.TYPEWRITER -> progress
             else -> 1f
         }
     }

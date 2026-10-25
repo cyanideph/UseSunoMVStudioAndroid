@@ -31,37 +31,19 @@ class EmbeddedLyricsExtractor {
         try {
             retriever.setDataSource(context, uri)
 
-            // Try different metadata keys for lyrics
-            val lyricsCandidates = listOf(
-                MediaMetadataRetriever.METADATA_KEY_LYRICS,
-                "SYLT", // Synced lyrics
-                "USLT", // Unsynced lyrics
-                "LYRICS",
-                "\u00A9lyr", // iTunes
-            )
-
             var lyrics: String? = null
             var format = LyricsFormat.UNKNOWN
 
-            for (key in lyricsCandidates) {
-                val value = retriever.extractMetadata(key)
-                if (value != null && value.isNotBlank()) {
-                    lyrics = value
-                    format = detectFormat(value)
-                    break
-                }
-            }
-
-            // Also check for embedded LRC in other tags
-            if (lyrics == null) {
-                for (i in 0..20) {
+            // Check for embedded lyrics in metadata tags
+            for (i in 0..45) {
+                try {
                     val value = retriever.extractMetadata(i)
                     if (value != null && value.isNotBlank() && looksLikeLyrics(value)) {
                         lyrics = value
                         format = detectFormat(value)
                         break
                     }
-                }
+                } catch (_: Exception) {}
             }
 
             // Extract cover art

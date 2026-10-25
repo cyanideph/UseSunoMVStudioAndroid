@@ -156,8 +156,8 @@ class DioramaRenderer : Canvas2DRenderer(Template.DIORAMA) {
         // Override to render lyrics at specific depth
         val lyricsLayerZ = -150f
         val focalLength = 1000f
-        val centerX = bounds.centerX()
-        val centerY = bounds.centerY()
+        val centerX = bounds.centerX().toFloat()
+        val centerY = bounds.centerY().toFloat()
 
         val visibleLines = project.lines.filter { it.start <= time && it.end >= time }
         val lineHeight = textPaint.textSize * project.lineHeight * 1.5f

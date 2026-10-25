@@ -143,7 +143,7 @@ class MediaCodecAudioDecoder {
             val frac = srcPos - srcIndex
 
             if (srcIndex + 1 < input.size) {
-                output[i] = input[srcIndex] * (1 - frac) + input[srcIndex + 1] * frac
+                output[i] = (input[srcIndex] * (1.0 - frac) + input[srcIndex + 1] * frac).toFloat()
             } else if (srcIndex < input.size) {
                 output[i] = input[srcIndex]
             }

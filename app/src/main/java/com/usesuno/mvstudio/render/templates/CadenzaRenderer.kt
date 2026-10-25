@@ -55,13 +55,13 @@ class CadenzaRenderer : Canvas2DRenderer(Template.CADENZA) {
         val trebleInfluence = audioTreble * reactivity.trebleGain
         val powerInfluence = audioPower * reactivity.threshold
 
-        val centerX = bounds.centerX()
-        val centerY = bounds.centerY()
+        val centerX = bounds.centerX().toFloat()
+        val centerY = bounds.centerY().toFloat()
 
         for (ribbon in ribbons) {
             // Update ribbon parameters based on audio
             ribbon.amplitude = max(20f, ribbon.amplitude + (bassInfluence * 100 - ribbon.amplitude) * 0.1f)
-            ribbon.frequency = max(0.005f, ribbon.frequency + (trebleInfluence * 0.02 - ribbon.frequency) * 0.1f)
+            ribbon.frequency = max(0.005f, ribbon.frequency + (trebleInfluence * 0.02f - ribbon.frequency) * 0.1f)
             ribbon.phase += ribbon.speed * 0.02f
 
             drawRibbon(canvas, ribbon, centerX, centerY, powerInfluence)
@@ -81,7 +81,7 @@ class CadenzaRenderer : Canvas2DRenderer(Template.CADENZA) {
             val x = i * step
             val normalizedX = x / width
             val wave = sin(ribbon.phase + normalizedX * ribbon.frequency * width * 2 * PI)
-            val y = centerY + ribbon.yOffset + wave * ribbon.amplitude
+            val y = centerY + ribbon.yOffset + (wave * ribbon.amplitude).toFloat()
 
             if (first) {
                 path.moveTo(x, y)

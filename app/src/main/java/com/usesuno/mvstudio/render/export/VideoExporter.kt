@@ -49,43 +49,43 @@ class VideoExporter(
         val resolution = project.resolution
         val aspectRatio = project.aspectRatio
 
-        when (resolution) {
-            Resolution.P720 -> {
-                width = 1280
-                height = 720
-            }
-            Resolution.P1080 -> {
-                width = 1920
-                height = 1080
-            }
-            Resolution.P1440 -> {
-                width = 2560
-                height = 1440
-            }
-            Resolution.P2160 -> {
-                width = 3840
-                height = 2160
-            }
+        var w = when (resolution) {
+            Resolution.P720 -> 1280
+            Resolution.P1080 -> 1920
+            Resolution.P1440 -> 2560
+            Resolution.P2160 -> 3840
+        }
+        var h = when (resolution) {
+            Resolution.P720 -> 720
+            Resolution.P1080 -> 1080
+            Resolution.P1440 -> 1440
+            Resolution.P2160 -> 2160
         }
 
         // Adjust for aspect ratio
         when (aspectRatio) {
             AspectRatio.RATIO_9_16 -> {
-                val temp = width
-                width = height
-                height = temp
+                val temp = w
+                w = h
+                h = temp
             }
             AspectRatio.RATIO_1_1 -> {
-                width = kotlin.math.min(width, height)
-                height = width
+                w = kotlin.math.min(w, h)
+                h = w
             }
             AspectRatio.RATIO_4_3 -> {
-                height = (width * 3 / 4)
+                h = (w * 3 / 4)
             }
             AspectRatio.RATIO_3_4 -> {
-                width = (height * 3 / 4)
+                w = (h * 3 / 4)
+            }
+            AspectRatio.RATIO_16_9 -> {
+                // Keep 16:9 as default
             }
         }
+
+        width = w
+        height = h
 
         fps = project.exportFps
         bitrate = when (project.exportQuality) {
@@ -215,11 +215,6 @@ class VideoExporter(
         eglCore.makeCurrent(inputSurface)
 
         try {
-            // Draw bitmap to surface
-            val gl = GLES20.gl
-            // ... OpenGL drawing code would go here
-            // For simplicity, using a simpler approach with getInputBuffer
-
             // Alternative: Use byte buffer encoding
             encodeFrameToBuffer(bitmap, presentationTimeUs)
         } finally {
@@ -392,18 +387,5 @@ class EglCore {
 
     fun release() {
         // Cleanup
-    }
-}
-
-/**
- * Export result wrapper
- */
-sealed class Result<out T> {
-    data class Success<out T>(val value: T) : Result<T>()
-    data class Failure(val exception: Exception) : Result<Nothing>()
-
-    companion object {
-        fun <T> success(value: T): Result<T> = Success(value)
-        fun <T> failure(exception: Exception): Result<T> = Failure(exception)
     }
 }

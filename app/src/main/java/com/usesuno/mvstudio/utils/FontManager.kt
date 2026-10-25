@@ -65,7 +65,7 @@ class FontManager(private val context: Context) {
                     "com.google.android.gms.fonts",
                     "com.google.android.gms",
                     "$family:$weight",
-                    arrayOf() // Empty certificate array for Google Fonts provider
+                    emptyList<List<ByteArray>>() // Empty certificate array for Google Fonts provider
                 )
 
                 val callback = object : FontsContractCompat.FontRequestCallback() {
@@ -100,7 +100,7 @@ class FontManager(private val context: Context) {
                 file.parentFile?.mkdirs()
                 FileOutputStream(file).use { it.write(asset.data) }
 
-                val typeface = Typeface.createFromFile(file) ?: return null
+                val typeface = Typeface.createFromFile(file) ?: return@withContext null
                 fontCache[cacheKey] = typeface
                 typeface
             } catch (e: Exception) {

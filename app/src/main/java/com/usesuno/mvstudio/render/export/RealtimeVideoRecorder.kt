@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  * Real-time video recorder using MediaRecorder with TextureView
  * Fallback for when frame-by-frame export is not available
  */
-class RealtimeVideoRecorder(
+open class RealtimeVideoRecorder(
     private val project: Project,
     private val audioAnalysis: AudioAnalysis,
     private val audioFilePath: String,
@@ -76,9 +76,10 @@ class RealtimeVideoRecorder(
             setOutputFile(outputFile.absolutePath)
 
             // Set surface from texture view
-            surfaceTexture = textureView?.surfaceTexture
-            surface = Surface(surfaceTexture!!)
-            setInputSurface(surface)
+            this@RealtimeVideoRecorder.surfaceTexture = textureView?.surfaceTexture
+            val inputSurf = Surface(this@RealtimeVideoRecorder.surfaceTexture!!)
+            this@RealtimeVideoRecorder.surface = inputSurf
+            setInputSurface(inputSurf)
 
             try {
                 prepare()

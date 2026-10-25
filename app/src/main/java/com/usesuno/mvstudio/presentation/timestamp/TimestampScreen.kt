@@ -46,6 +46,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun TimestampScreen(
     project: Project,
@@ -73,21 +74,15 @@ fun TimestampScreen(
         }
     }
 
-    DisposableEffect(isPlaying) {
-        var job: kotlinx.coroutines.Job? = null
+    LaunchedEffect(isPlaying) {
         if (isPlaying) {
-            job = lifecycleScope.launch {
-                while (isPlaying && currentTime < duration) {
-                    currentTime = mediaPlayer.currentPosition / 1000.0
-                    delay(50)
-                }
-                if (currentTime >= duration) {
-                    isPlaying = false
-                }
+            while (isPlaying && currentTime < duration) {
+                currentTime = mediaPlayer.currentPosition / 1000.0
+                delay(50)
             }
-        }
-        onDispose {
-            job?.cancel()
+            if (currentTime >= duration) {
+                isPlaying = false
+            }
         }
     }
 
@@ -141,8 +136,8 @@ fun TimestampScreen(
                             Slider(
                                 value = (globalOffset + 10).toFloat(), // -10 to +10
                                 onValueChange = { v ->
-                                    globalOffset = v - 10
-                                    onProjectChange(project.copy(globalOffset = v - 10))
+                                    globalOffset = (v - 10).toDouble()
+                                    onProjectChange(project.copy(globalOffset = (v - 10).toDouble()))
                                 },
                                 valueRange = 0f..20f,
                                 modifier = Modifier.fillMaxWidth(),

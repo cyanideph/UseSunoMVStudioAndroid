@@ -25,8 +25,8 @@ class ClassicRenderer : Canvas2DRenderer(Template.CLASSIC) {
     )
 
     override fun renderTemplate(canvas: Canvas, time: Double, audioFrame: AudioFrame?) {
-        val centerX = bounds.centerX()
-        val centerY = bounds.centerY()
+        val centerX = bounds.centerX().toFloat()
+        val centerY = bounds.centerY().toFloat()
         val lineHeight = textPaint.textSize * project.lineHeight
 
         val visibleLines = project.lines.filter { it.start <= time && it.end >= time }

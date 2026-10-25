@@ -5,6 +5,7 @@ import android.graphics.Paint
 import android.graphics.Rect
 import com.usesuno.mvstudio.domain.model.*
 import com.usesuno.mvstudio.render.engine.Canvas2DRenderer
+import kotlin.math.*
 
 /**
  * Astral template - 3D starfield with lyrics floating in space
@@ -41,9 +42,9 @@ class AstralRenderer : Canvas2DRenderer(Template.ASTRAL) {
             val r = (Math.random() * depth).toFloat()
 
             stars.add(Star(
-                x = r * cos(phi) * cos(theta),
-                y = r * sin(phi),
-                z = r * cos(phi) * sin(theta),
+                x = (r * cos(phi) * cos(theta)).toFloat(),
+                y = (r * sin(phi)).toFloat(),
+                z = (r * cos(phi) * sin(theta)).toFloat(),
                 size = (Math.random() * 2 + 0.5).toFloat(),
                 hue = (Math.random() * 60 + 200).toFloat(), // Blue-white
                 brightness = (Math.random() * 0.5 + 0.5).toFloat(),
@@ -69,8 +70,8 @@ class AstralRenderer : Canvas2DRenderer(Template.ASTRAL) {
         val cosRX = cos(rotationX).toFloat()
         val sinRX = sin(rotationX).toFloat()
 
-        val centerX = bounds.centerX()
-        val centerY = bounds.centerY()
+        val centerX = bounds.centerX().toFloat()
+        val centerY = bounds.centerY().toFloat()
         val focalLength = 1000f
 
         // Project and sort stars by depth

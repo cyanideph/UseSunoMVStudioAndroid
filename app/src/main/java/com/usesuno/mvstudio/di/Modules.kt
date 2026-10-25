@@ -59,7 +59,7 @@ object DomainModule {
 
     @Provides
     @Singleton
-    fun provideWaveformExtractor(): WaveformExtractor = WaveformExtractor()
+    fun provideWaveformExtractor(): WaveformExtractor = WaveformExtractor
 
     @Provides
     @Singleton

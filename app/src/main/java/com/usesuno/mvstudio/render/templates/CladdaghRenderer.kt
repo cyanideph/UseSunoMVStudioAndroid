@@ -34,8 +34,8 @@ class CladdaghRenderer : Canvas2DRenderer(Template.CLADDAGH) {
     override fun onInitialize() {
         repeat(4) { i ->
             knots.add(CelticKnot(
-                centerX = bounds.centerX() + (i - 1.5f) * 200,
-                centerY = bounds.centerY(),
+                centerX = bounds.centerX().toFloat() + (i - 1.5f) * 200f,
+                centerY = bounds.centerY().toFloat(),
                 radius = (Math.random() * 80 + 60).toFloat(),
                 phase = (Math.random() * 2 * PI).toFloat(),
                 hue = (Math.random() * 60 + 180).toFloat(), // Cyan-green
@@ -77,9 +77,9 @@ class CladdaghRenderer : Canvas2DRenderer(Template.CLADDAGH) {
             val weave = 20f * sin(knot.numLoops * 2 * t + knot.phase)
 
             if (i == 0) {
-                path.moveTo(knot.centerX + x, knot.centerY + y + weave)
+                path.moveTo(knot.centerX + x.toFloat(), knot.centerY + (y + weave).toFloat())
             } else {
-                path.lineTo(knot.centerX + x, knot.centerY + y + weave)
+                path.lineTo(knot.centerX + x.toFloat(), knot.centerY + (y + weave).toFloat())
             }
         }
         path.close()

@@ -19,9 +19,9 @@ class ChromaRenderer : Canvas2DRenderer(Template.CHROMA) {
 
     private val glitchLines = mutableListOf<GlitchLine>()
     private val rgbLayers = arrayOf(
-        Paint().apply { isAntiAlias = true; colorFilter = android.graphics.PorterDuffColorFilter(0xFFFF0000, android.graphics.PorterDuff.Mode.SRC_IN) },
-        Paint().apply { isAntiAlias = true; colorFilter = android.graphics.PorterDuffColorFilter(0xFF00FF00, android.graphics.PorterDuff.Mode.SRC_IN) },
-        Paint().apply { isAntiAlias = true; colorFilter = android.graphics.PorterDuffColorFilter(0xFF0000FF, android.graphics.PorterDuff.Mode.SRC_IN) },
+        Paint().apply { isAntiAlias = true; colorFilter = android.graphics.PorterDuffColorFilter(0xFFFF0000.toInt(), android.graphics.PorterDuff.Mode.SRC_IN) },
+        Paint().apply { isAntiAlias = true; colorFilter = android.graphics.PorterDuffColorFilter(0xFF00FF00.toInt(), android.graphics.PorterDuff.Mode.SRC_IN) },
+        Paint().apply { isAntiAlias = true; colorFilter = android.graphics.PorterDuffColorFilter(0xFF0000FF.toInt(), android.graphics.PorterDuff.Mode.SRC_IN) },
     )
     private var glitchTimer = 0.0
 
@@ -50,8 +50,8 @@ class ChromaRenderer : Canvas2DRenderer(Template.CHROMA) {
             spawnGlitch(trebleInfluence)
         }
 
-        val centerX = bounds.centerX()
-        val centerY = bounds.centerY()
+        val centerX = bounds.centerX().toFloat()
+        val centerY = bounds.centerY().toFloat()
 
         // Draw RGB separated text
         drawChromaText(canvas, centerX, centerY, bassInfluence, trebleInfluence)
@@ -88,21 +88,21 @@ class ChromaRenderer : Canvas2DRenderer(Template.CHROMA) {
 
             // Red channel (left)
             canvas.save()
-            canvas.translate(-separation, 0)
-            textPaint.colorFilter = android.graphics.PorterDuffColorFilter(0xFFFF0000, android.graphics.PorterDuff.Mode.SRC_IN)
+            canvas.translate(-separation, 0f)
+            textPaint.colorFilter = android.graphics.PorterDuffColorFilter(0xFFFF0000.toInt(), android.graphics.PorterDuff.Mode.SRC_IN)
             textPaint.alpha = (255 * introProgress).toInt()
             canvas.drawText(line.text, centerX, y, textPaint)
             canvas.restore()
 
             // Green channel (center)
-            textPaint.colorFilter = android.graphics.PorterDuffColorFilter(0xFF00FF00, android.graphics.PorterDuff.Mode.SRC_IN)
+            textPaint.colorFilter = android.graphics.PorterDuffColorFilter(0xFF00FF00.toInt(), android.graphics.PorterDuff.Mode.SRC_IN)
             textPaint.alpha = (255 * introProgress).toInt()
             canvas.drawText(line.text, centerX, y, textPaint)
 
             // Blue channel (right)
             canvas.save()
-            canvas.translate(separation, 0)
-            textPaint.colorFilter = android.graphics.PorterDuffColorFilter(0xFF0000FF, android.graphics.PorterDuff.Mode.SRC_IN)
+            canvas.translate(separation, 0f)
+            textPaint.colorFilter = android.graphics.PorterDuffColorFilter(0xFF0000FF.toInt(), android.graphics.PorterDuff.Mode.SRC_IN)
             textPaint.alpha = (255 * introProgress).toInt()
             canvas.drawText(line.text, centerX, y, textPaint)
             canvas.restore()
@@ -126,14 +126,14 @@ class ChromaRenderer : Canvas2DRenderer(Template.CHROMA) {
         }
 
         val path = Path()
-        path.moveTo(0, glitch.y)
-        path.lineTo(width, glitch.y)
+        path.moveTo(0f, glitch.y)
+        path.lineTo(width.toFloat(), glitch.y)
 
         // Add horizontal offset in middle
         val midX = width / 2f
-        path.moveTo(0, glitch.y)
+        path.moveTo(0f, glitch.y)
         path.lineTo(midX + glitch.offsetX, glitch.y)
-        path.lineTo(width, glitch.y)
+        path.lineTo(width.toFloat(), glitch.y)
 
         canvas.drawPath(path, paint)
     }
