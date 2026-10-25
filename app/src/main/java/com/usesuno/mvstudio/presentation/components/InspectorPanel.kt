@@ -20,6 +20,8 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonItem
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -188,21 +190,24 @@ fun TemplateSelector(
     selectedTemplate: Template,
     onTemplateChange: (Template) -> Unit,
 ) {
+    var expanded by remember { mutableStateOf(false) }
     ExposedDropdownMenuBox(
         modifier = Modifier.fillMaxWidth(),
-    ) { expanded ->
+        expanded = expanded,
+        onExpandedChange = { expanded = it },
+    ) {
         androidx.compose.material3.Text(
             text = selectedTemplate.name,
             modifier = Modifier.fillMaxWidth(),
         )
         DropdownMenu(
             expanded = expanded,
-            onDismissRequest = { /* handled by ExposedDropdownMenuBox */ },
+            onDismissRequest = { expanded = false },
         ) {
             Template.values().forEach { template ->
                 DropdownMenuItem(
                     text = { Text(template.name) },
-                    onClick = { onTemplateChange(template) },
+                    onClick = { onTemplateChange(template); expanded = false },
                 )
             }
         }
@@ -246,12 +251,17 @@ fun BackgroundSelector(
     onBackgroundChange: (Background) -> Unit,
     onConfigChange: (BackgroundConfig) -> Unit,
 ) {
+    var expanded by remember { mutableStateOf(false) }
     Column {
-        ExposedDropdownMenuBox(modifier = Modifier.fillMaxWidth()) { expanded ->
+        ExposedDropdownMenuBox(
+            modifier = Modifier.fillMaxWidth(),
+            expanded = expanded,
+            onExpandedChange = { expanded = it },
+        ) {
             Text(background.name)
-            DropdownMenu(expanded = expanded, onDismissRequest = {}) {
+            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                 Background.values().forEach { bg ->
-                    DropdownMenuItem(text = { Text(bg.name) }, onClick = { onBackgroundChange(bg) })
+                    DropdownMenuItem(text = { Text(bg.name) }, onClick = { onBackgroundChange(bg); expanded = false })
                 }
             }
         }
@@ -298,6 +308,7 @@ fun IntroControls(
     onDurationChange: (Double) -> Unit,
     onStyleChange: (IntroStyle) -> Unit,
 ) {
+    var styleExpanded by remember { mutableStateOf(false) }
     Column {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -315,11 +326,15 @@ fun IntroControls(
             SliderRow("Duration", duration.toFloat(), 0.5f, 10f,
                 { v -> onDurationChange(v.toDouble()) })
 
-            ExposedDropdownMenuBox(modifier = Modifier.fillMaxWidth()) { expanded ->
+            ExposedDropdownMenuBox(
+                modifier = Modifier.fillMaxWidth(),
+                expanded = styleExpanded,
+                onExpandedChange = { styleExpanded = it },
+            ) {
                 Text(style.name)
-                DropdownMenu(expanded = expanded, onDismissRequest = {}) {
+                DropdownMenu(expanded = styleExpanded, onDismissRequest = { styleExpanded = false }) {
                     IntroStyle.values().forEach { s ->
-                        DropdownMenuItem(text = { Text(s.name) }, onClick = { onStyleChange(s) })
+                        DropdownMenuItem(text = { Text(s.name) }, onClick = { onStyleChange(s); styleExpanded = false })
                     }
                 }
             }
@@ -368,23 +383,24 @@ fun ExportSettingsControls(
     onFpsChange: (Int) -> Unit,
     onQualityChange: (ExportQuality) -> Unit,
 ) {
+    var formatExpanded by remember { mutableStateOf(false) }
+    var qualityExpanded by remember { mutableStateOf(false) }
     Column {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text("Format")
-            androidx.compose.material3.SegmentedButton(
-                selected = { format },
-                onClick = onFormatChange,
+            ExposedDropdownMenuBox(
                 modifier = Modifier.fillMaxWidth(),
+                expanded = formatExpanded,
+                onExpandedChange = { formatExpanded = it },
             ) {
-                ExportFormat.values().forEach { f ->
-                    androidx.compose.material3.SegmentedButtonItem(
-                        label = { Text(f.name) },
-                        selected = format == f,
-                        onClick = { onFormatChange(f) },
-                    )
+                androidx.compose.material3.Text(text = format.name)
+                DropdownMenu(expanded = formatExpanded, onDismissRequest = { formatExpanded = false }) {
+                    ExportFormat.values().forEach { f ->
+                        DropdownMenuItem(text = { Text(f.name) }, onClick = { onFormatChange(f); formatExpanded = false })
+                    }
                 }
             }
         }
@@ -396,17 +412,16 @@ fun ExportSettingsControls(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text("Quality")
-            androidx.compose.material3.SegmentedButton(
-                selected = { quality },
-                onClick = onQualityChange,
+            ExposedDropdownMenuBox(
                 modifier = Modifier.fillMaxWidth(),
+                expanded = qualityExpanded,
+                onExpandedChange = { qualityExpanded = it },
             ) {
-                ExportQuality.values().forEach { q ->
-                    androidx.compose.material3.SegmentedButtonItem(
-                        label = { Text(q.name) },
-                        selected = quality == q,
-                        onClick = { onQualityChange(q) },
-                    )
+                androidx.compose.material3.Text(text = quality.name)
+                DropdownMenu(expanded = qualityExpanded, onDismissRequest = { qualityExpanded = false }) {
+                    ExportQuality.values().forEach { q ->
+                        DropdownMenuItem(text = { Text(q.name) }, onClick = { onQualityChange(q); qualityExpanded = false })
+                    }
                 }
             }
         }

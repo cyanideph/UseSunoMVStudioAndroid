@@ -82,8 +82,9 @@ class LocalizationManager(private val context: Context) {
     /**
      * Get display name for locale in current locale
      */
-    fun getLocaleDisplayName(locale: Locale): String {
-        return locale.getDisplayName(getCurrentLocale().runBlocking())
+    suspend fun getLocaleDisplayName(locale: Locale): String {
+        val currentLocale = getCurrentLocale()
+        return locale.getDisplayName(currentLocale)
     }
 
     /**
