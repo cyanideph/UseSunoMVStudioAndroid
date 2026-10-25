@@ -7,6 +7,7 @@ import android.graphics.Typeface
 import com.usesuno.mvstudio.domain.model.*
 import com.usesuno.mvstudio.render.background.BackgroundRenderer
 import com.usesuno.mvstudio.render.background.BackgroundRendererFactory
+import com.usesuno.mvstudio.render.templates.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlin.math.max
