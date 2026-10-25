@@ -65,7 +65,7 @@ class FontManager(private val context: Context) {
                     "com.google.android.gms.fonts",
                     "com.google.android.gms",
                     "$family:$weight",
-                    android.content.pm.PackageManager.GET_SIGNATURES.toIntArray()
+                    intArrayOf(android.content.pm.PackageManager.GET_SIGNATURES)
                 )
 
                 val callback = object : FontsContractCompat.FontRequestCallback() {

@@ -31,9 +31,9 @@ class AudioFileImporter(private val context: Context) {
     private val extractor = EmbeddedLyricsExtractor()
 
     /**
-     * Launch audio file picker
+     * Create audio file picker launcher (caller must call launch())
      */
-    fun pickAudioFile(activity: Activity, onResult: (Uri?) -> Unit): ActivityResultLauncher<Intent> {
+    fun createAudioFilePickerLauncher(activity: Activity, onResult: (Uri?) -> Unit): ActivityResultLauncher<Intent> {
         return activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 val uri = result.data?.data
@@ -41,21 +41,25 @@ class AudioFileImporter(private val context: Context) {
             } else {
                 onResult(null)
             }
-        }.also { launcher ->
-            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-                type = "audio/*"
-                addCategory(Intent.CATEGORY_OPENABLE)
-                putExtra(Intent.EXTRA_MIME_TYPES, arrayOf(
-                    "audio/mpeg",
-                    "audio/wav",
-                    "audio/mp4",
-                    "audio/m4a",
-                    "audio/flac",
-                    "audio/ogg",
-                    "audio/opus",
-                ))
-            }
-            launcher.launch(intent)
+        }
+    }
+
+    /**
+     * Create audio file picker intent
+     */
+    fun createAudioFilePickerIntent(): Intent {
+        return Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            type = "audio/*"
+            addCategory(Intent.CATEGORY_OPENABLE)
+            putExtra(Intent.EXTRA_MIME_TYPES, arrayOf(
+                "audio/mpeg",
+                "audio/wav",
+                "audio/mp4",
+                "audio/m4a",
+                "audio/flac",
+                "audio/ogg",
+                "audio/opus",
+            ))
         }
     }
 
@@ -176,35 +180,37 @@ class AudioFileImporter(private val context: Context) {
  */
 class MediaFileImporter(private val context: Context) {
 
-    fun pickImageFile(activity: Activity, onResult: (Uri?) -> Unit): ActivityResultLauncher<Intent> {
+    fun createImageFilePickerLauncher(activity: Activity, onResult: (Uri?) -> Unit): ActivityResultLauncher<Intent> {
         return activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 onResult(result.data?.data)
             } else {
                 onResult(null)
             }
-        }.also { launcher ->
-            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-                type = "image/*"
-                addCategory(Intent.CATEGORY_OPENABLE)
-            }
-            launcher.launch(intent)
         }
     }
 
-    fun pickVideoFile(activity: Activity, onResult: (Uri?) -> Unit): ActivityResultLauncher<Intent> {
+    fun createImageFilePickerIntent(): Intent {
+        return Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            type = "image/*"
+            addCategory(Intent.CATEGORY_OPENABLE)
+        }
+    }
+
+    fun createVideoFilePickerLauncher(activity: Activity, onResult: (Uri?) -> Unit): ActivityResultLauncher<Intent> {
         return activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 onResult(result.data?.data)
             } else {
                 onResult(null)
             }
-        }.also { launcher ->
-            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-                type = "video/*"
-                addCategory(Intent.CATEGORY_OPENABLE)
-            }
-            launcher.launch(intent)
+        }
+    }
+
+    fun createVideoFilePickerIntent(): Intent {
+        return Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            type = "video/*"
+            addCategory(Intent.CATEGORY_OPENABLE)
         }
     }
 
