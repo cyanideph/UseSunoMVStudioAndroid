@@ -44,9 +44,13 @@ android {
         kotlinCompilerExtensionVersion = "2.0.21"
     }
 
-    packagingOptions {
-        resources.excludes += "META-INF/*.kotlin_module"
-        jniLibs.pickFirsts += "lib/**/*"
+    packaging {
+        resources {
+            excludes += "META-INF/*.kotlin_module"
+        }
+        jniLibs {
+            pickFirsts += "lib/**/*"
+        }
     }
 
     buildFeatures {
