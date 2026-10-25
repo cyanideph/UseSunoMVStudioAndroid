@@ -8,6 +8,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CoroutineStart
 
 /**
  * Playback clock synchronized with audio - ported from audio/clock.ts
@@ -34,7 +35,7 @@ class PlaybackClock(
         if (_isPlaying.value) return
         _isPlaying.value = true
         lastFrameTime = System.nanoTime()
-        animationFrameJob = kotlinx.coroutines.Dispatchers.Main.immediate.startCoroutine {
+        animationFrameJob = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate).launch(start = CoroutineStart.UNDISPATCHED) {
             loop()
         }
     }
