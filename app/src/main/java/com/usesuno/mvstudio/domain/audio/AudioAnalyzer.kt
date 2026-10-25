@@ -6,7 +6,6 @@ import kotlin.math.log10
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.cos
-import kotlin.math.PI
 
 /**
  * Audio analysis ported from UseSunoMVStudio's audio/analysis.ts
@@ -18,7 +17,7 @@ class AudioAnalyzer(
     private val hopSize: Int = 512,
     private val targetFps: Int = 30,
 ) {
-    private val fft = DoubleFFT_1D(fftSize)
+    private val fft = DoubleFFT_1D(fftSize.toLong())
     private val window = createHannWindow(fftSize)
 
     /**
