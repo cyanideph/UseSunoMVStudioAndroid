@@ -20,7 +20,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import com.usesuno.mvstudio.data.persistence.ProjectBundleSerializer
-import com.usesuno.mvstudio.data.persistence.ProjectBundleSerializer.Result
 import com.usesuno.mvstudio.di.UseSunoMVStudioApplication
 import com.usesuno.mvstudio.domain.model.Project
 import com.usesuno.mvstudio.domain.model.Template
