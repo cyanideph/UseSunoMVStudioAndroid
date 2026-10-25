@@ -5,6 +5,8 @@ import kotlin.math.sqrt
 import kotlin.math.log10
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.cos
+import kotlin.math.PI
 
 /**
  * Audio analysis ported from UseSunoMVStudio's audio/analysis.ts
