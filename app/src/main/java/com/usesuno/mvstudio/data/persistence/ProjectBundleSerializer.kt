@@ -9,6 +9,8 @@ import com.usesuno.mvstudio.data.db.AssetEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.encodeToString
+import kotlinx.coroutines.flow.first
 import okio.ByteString
 import okio.buffer
 import okio.sink
@@ -45,7 +47,7 @@ class ProjectBundleSerializer(private val context: Context) {
 
             // Write audio file if exists
             project.audioId?.let { audioId ->
-                val audioAsset = database.assetDao().getById(audioId)?.await()
+                val audioAsset = database.assetDao().getById(audioId)
                 audioAsset?.let { asset ->
                     zipOutputStream.putNextEntry(ZipEntry("audio${getExtension(asset.mimeType)}"))
                     zipOutputStream.write(asset.data)
@@ -54,7 +56,7 @@ class ProjectBundleSerializer(private val context: Context) {
             }
 
             // Write assets
-            val assets = database.assetDao().getByProjectId(project.id).toList().await()
+            val assets = database.assetDao().getByProjectId(project.id).first()
             for (asset in assets) {
                 val entryName = "assets/${asset.id}${getExtension(asset.mimeType)}"
                 zipOutputStream.putNextEntry(ZipEntry(entryName))
