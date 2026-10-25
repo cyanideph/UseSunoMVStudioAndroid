@@ -20,7 +20,7 @@ import java.util.Locale
  */
 class LocalizationManager(private val context: Context) {
 
-    private val dataStore = context.preferencesDataStore("localization_prefs")
+    private val dataStore: androidx.datastore.preferences.DataStore<Preferences> = context.preferencesDataStore("localization_prefs")
     private val LOCALE_KEY = stringPreferencesKey("selected_locale")
 
     // Supported languages matching web version
