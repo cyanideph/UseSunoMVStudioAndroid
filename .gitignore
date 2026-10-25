@@ -1,0 +1,51 @@
+# Gradle
+.gradle/
+build/
+/*/build/
+/*/*/build/
+!**/src/main/**/build/
+
+# Local configuration
+local.properties
+gradle.properties.local
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build outputs
+*.apk
+*.aar
+*.ap_
+
+# Test reports
+**/build/reports/
+
+# Coverage
+**/build/outputs/code-coverage/
+
+# Keystores
+*.jks
+*.keystore
+
+# Generated
+**/generated/
+
+# Kapt
+**/kapt3/
+
+# Compose
+**/compose/
+
+# Hilt
+**/hilt/
+
+# Room
+**/schemas/
