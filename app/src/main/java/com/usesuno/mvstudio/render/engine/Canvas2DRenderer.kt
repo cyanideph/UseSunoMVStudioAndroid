@@ -143,8 +143,8 @@ abstract class Canvas2DRenderer(
         val visibleLines = project.lines.filter { it.start <= time && it.end >= time }
         if (visibleLines.isEmpty()) return
 
-        val centerX = bounds.centerX()
-        val centerY = bounds.centerY()
+        val centerX = bounds.centerX().toFloat()
+        val centerY = bounds.centerY().toFloat()
         val lineHeight = textPaint.textSize * project.lineHeight
 
         for ((index, line) in visibleLines.withIndex()) {
@@ -171,17 +171,16 @@ abstract class Canvas2DRenderer(
         return when (project.introStyle) {
             IntroStyle.FADE -> progress
             IntroStyle.SLIDE_UP -> {
-                val delay = lineIndex * 0.1
+                val delay = lineIndex * 0.1f
                 max(0f, min(1f, (progress - delay) / (1f - delay)))
             }
             IntroStyle.SLIDE_DOWN -> {
-                val delay = (totalLines - lineIndex - 1) * 0.1
+                val delay = (totalLines - lineIndex - 1) * 0.1f
                 max(0f, min(1f, (progress - delay) / (1f - delay)))
             }
             IntroStyle.ZOOM -> progress * progress
             IntroStyle.TYPEWRITER -> {
-                val charProgress = progress * line.text.length
-                min(1f, charProgress / line.text.length)
+                min(1f, progress * totalLines)
             }
             else -> 1f
         }
