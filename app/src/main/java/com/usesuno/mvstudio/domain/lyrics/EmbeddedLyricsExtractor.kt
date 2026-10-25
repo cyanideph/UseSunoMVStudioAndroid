@@ -33,7 +33,7 @@ class EmbeddedLyricsExtractor {
 
             // Try different metadata keys for lyrics
             val lyricsCandidates = listOf(
-                MediaMetadataRetriever.METADATA_KEY_LYRICS,
+                "LYRICS",
                 "SYLT", // Synced lyrics
                 "USLT", // Unsynced lyrics
                 "LYRICS",
