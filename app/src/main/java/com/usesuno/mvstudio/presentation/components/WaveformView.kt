@@ -5,8 +5,8 @@ import android.graphics.Path
 import android.graphics.Rect
 import android.media.MediaMetadataRetriever
 import android.net.Uri
-import androidx.compose.foundation.canvas.Canvas
-import androidx.compose.foundation.canvas.drawIntoCanvas
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
