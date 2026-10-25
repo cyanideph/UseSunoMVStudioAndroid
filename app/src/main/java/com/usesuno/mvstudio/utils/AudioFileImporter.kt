@@ -10,6 +10,7 @@ import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.provider.MediaStore
 import android.provider.OpenableColumns
+import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import com.usesuno.mvstudio.data.db.AssetEntity
@@ -33,7 +34,7 @@ class AudioFileImporter(private val context: Context) {
     /**
      * Create audio file picker launcher (caller must call launch())
      */
-    fun createAudioFilePickerLauncher(activity: Activity, onResult: (Uri?) -> Unit): ActivityResultLauncher<Intent> {
+    fun createAudioFilePickerLauncher(activity: ComponentActivity, onResult: (Uri?) -> Unit): ActivityResultLauncher<Intent> {
         return activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 val uri = result.data?.data
@@ -180,7 +181,7 @@ class AudioFileImporter(private val context: Context) {
  */
 class MediaFileImporter(private val context: Context) {
 
-    fun createImageFilePickerLauncher(activity: Activity, onResult: (Uri?) -> Unit): ActivityResultLauncher<Intent> {
+    fun createImageFilePickerLauncher(activity: ComponentActivity, onResult: (Uri?) -> Unit): ActivityResultLauncher<Intent> {
         return activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 onResult(result.data?.data)
@@ -197,7 +198,7 @@ class MediaFileImporter(private val context: Context) {
         }
     }
 
-    fun createVideoFilePickerLauncher(activity: Activity, onResult: (Uri?) -> Unit): ActivityResultLauncher<Intent> {
+    fun createVideoFilePickerLauncher(activity: ComponentActivity, onResult: (Uri?) -> Unit): ActivityResultLauncher<Intent> {
         return activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 onResult(result.data?.data)

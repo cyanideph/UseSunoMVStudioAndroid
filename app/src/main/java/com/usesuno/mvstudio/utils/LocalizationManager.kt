@@ -3,10 +3,10 @@ package com.usesuno.mvstudio.utils
 import android.content.Context
 import android.content.res.Configuration
 import android.content.res.Resources
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.emptyPreferences
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.Preferences
+import androidx.datastore.preferences.emptyPreferences
+import androidx.datastore.preferences.edit
+import androidx.datastore.preferences.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.usesuno.mvstudio.di.UseSunoMVStudioApplication
 import kotlinx.coroutines.CoroutineScope

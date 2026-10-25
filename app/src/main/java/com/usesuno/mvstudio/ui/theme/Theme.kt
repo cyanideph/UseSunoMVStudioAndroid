@@ -10,6 +10,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -87,105 +90,105 @@ object UseSunoMVStudioTheme {
 }
 
 val AppTypography = androidx.compose.material3.Typography(
-    displayLarge = androidx.compose.material3.TextStyle(
+    displayLarge = TextStyle(
         fontFamily = androidx.compose.ui.text.font.FontFamily.Default,
         fontWeight = androidx.compose.ui.text.font.FontWeight.Normal,
         fontSize = 57.sp,
         lineHeight = 64.sp,
         letterSpacing = (-0.25).sp,
     ),
-    displayMedium = androidx.compose.material3.TextStyle(
+    displayMedium = TextStyle(
         fontFamily = androidx.compose.ui.text.font.FontFamily.Default,
         fontWeight = androidx.compose.ui.text.font.FontWeight.Normal,
         fontSize = 45.sp,
         lineHeight = 52.sp,
         letterSpacing = 0.sp,
     ),
-    displaySmall = androidx.compose.material3.TextStyle(
+    displaySmall = TextStyle(
         fontFamily = androidx.compose.ui.text.font.FontFamily.Default,
         fontWeight = androidx.compose.ui.text.font.FontWeight.Normal,
         fontSize = 36.sp,
         lineHeight = 44.sp,
         letterSpacing = 0.sp,
     ),
-    headlineLarge = androidx.compose.material3.TextStyle(
+    headlineLarge = TextStyle(
         fontFamily = androidx.compose.ui.text.font.FontFamily.Default,
         fontWeight = androidx.compose.ui.text.font.FontWeight.Normal,
         fontSize = 32.sp,
         lineHeight = 40.sp,
         letterSpacing = 0.sp,
     ),
-    headlineMedium = androidx.compose.material3.TextStyle(
+    headlineMedium = TextStyle(
         fontFamily = androidx.compose.ui.text.font.FontFamily.Default,
         fontWeight = androidx.compose.ui.text.font.FontWeight.Normal,
         fontSize = 28.sp,
         lineHeight = 36.sp,
         letterSpacing = 0.sp,
     ),
-    headlineSmall = androidx.compose.material3.TextStyle(
+    headlineSmall = TextStyle(
         fontFamily = androidx.compose.ui.text.font.FontFamily.Default,
         fontWeight = androidx.compose.ui.text.font.FontWeight.Normal,
         fontSize = 24.sp,
         lineHeight = 32.sp,
         letterSpacing = 0.sp,
     ),
-    titleLarge = androidx.compose.material3.TextStyle(
+    titleLarge = TextStyle(
         fontFamily = androidx.compose.ui.text.font.FontFamily.Default,
         fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
         fontSize = 22.sp,
         lineHeight = 28.sp,
         letterSpacing = 0.sp,
     ),
-    titleMedium = androidx.compose.material3.TextStyle(
+    titleMedium = TextStyle(
         fontFamily = androidx.compose.ui.text.font.FontFamily.Default,
         fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
         fontSize = 16.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.15.sp,
     ),
-    titleSmall = androidx.compose.material3.TextStyle(
+    titleSmall = TextStyle(
         fontFamily = androidx.compose.ui.text.font.FontFamily.Default,
         fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
         fontSize = 14.sp,
         lineHeight = 20.sp,
         letterSpacing = 0.1.sp,
     ),
-    bodyLarge = androidx.compose.material3.TextStyle(
+    bodyLarge = TextStyle(
         fontFamily = androidx.compose.ui.text.font.FontFamily.Default,
         fontWeight = androidx.compose.ui.text.font.FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.5.sp,
     ),
-    bodyMedium = androidx.compose.material3.TextStyle(
+    bodyMedium = TextStyle(
         fontFamily = androidx.compose.ui.text.font.FontFamily.Default,
         fontWeight = androidx.compose.ui.text.font.FontWeight.Normal,
         fontSize = 14.sp,
         lineHeight = 20.sp,
         letterSpacing = 0.25.sp,
     ),
-    bodySmall = androidx.compose.material3.TextStyle(
+    bodySmall = TextStyle(
         fontFamily = androidx.compose.ui.text.font.FontFamily.Default,
         fontWeight = androidx.compose.ui.text.font.FontWeight.Normal,
         fontSize = 12.sp,
         lineHeight = 16.sp,
         letterSpacing = 0.4.sp,
     ),
-    labelLarge = androidx.compose.material3.TextStyle(
+    labelLarge = TextStyle(
         fontFamily = androidx.compose.ui.text.font.FontFamily.Default,
         fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
         fontSize = 14.sp,
         lineHeight = 20.sp,
         letterSpacing = 0.1.sp,
     ),
-    labelMedium = androidx.compose.material3.TextStyle(
+    labelMedium = TextStyle(
         fontFamily = androidx.compose.ui.text.font.FontFamily.Default,
         fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
         fontSize = 12.sp,
         lineHeight = 16.sp,
         letterSpacing = 0.5.sp,
     ),
-    labelSmall = androidx.compose.material3.TextStyle(
+    labelSmall = TextStyle(
         fontFamily = androidx.compose.ui.text.font.FontFamily.Default,
         fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
         fontSize = 11.sp,
