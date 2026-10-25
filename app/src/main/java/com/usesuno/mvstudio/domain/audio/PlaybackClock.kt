@@ -4,6 +4,10 @@ import com.usesuno.mvstudio.domain.model.AudioAnalysis
 import com.usesuno.mvstudio.domain.model.AudioFrame
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 /**
  * Playback clock synchronized with audio - ported from audio/clock.ts
@@ -19,7 +23,7 @@ class PlaybackClock(
     private var _isPlaying = MutableStateFlow(false)
     val isPlaying: StateFlow<Boolean> = _isPlaying
 
-    private var _playbackRate = MutableStateFlow(1.0)
+    private var _playbackRate = MutableStateFlow(1.0f)
     val playbackRate: StateFlow<Float> = _playbackRate
 
     private var animationFrameJob: kotlinx.coroutines.Job? = null
@@ -57,7 +61,7 @@ class PlaybackClock(
     private suspend fun loop() {
         while (_isPlaying.value) {
             val now = System.nanoTime()
-            val delta = (now - lastFrameTime) / 1_000_000_000.0 * _playbackRate.value
+            val delta = (now - lastFrameTime) / 1_000_000_000.0 * _playbackRate.value.toDouble()
             lastFrameTime = now
 
             val newTime = (_currentTime.value + delta).coerceIn(0.0, audioAnalysis.duration)
