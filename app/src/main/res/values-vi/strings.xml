@@ -1,0 +1,32 @@
+<resources>
+    <string name="app_name">UseSuno MV Studio</string>
+
+    <string name="new_project">Dự án mới</string>
+    <string name="open_project">Mở dự án</string>
+    <string name="save_project">Lưu dự án</string>
+    <string name="export_video">Xuất video</string>
+    <string name="settings">Cài đặt</string>
+    <string name="language">Ngôn ngữ</string>
+
+    <string name="import_audio">Nhập âm thanh</string>
+    <string name="import_lyrics">Nhập lời bài hát</string>
+    <string name="paste_lyrics">Dán lời bài hát</string>
+    <string name="edit_lyrics">Chỉnh sửa lời bài hát</string>
+    <string name="timeline">Dòng thời gian</string>
+    <string name="preview">Xem trước</string>
+    <string name="play">Phát</string>
+    <string name="pause">Tạm dừng</string>
+
+    <string name="template">Mẫu</string>
+    <string name="template_fume">Khói</string>
+    <string name="template_classic">Cổ điển</string>
+
+    <string name="background">Nền</string>
+    <string name="background_custom">Tùy chỉnh</string>
+
+    <string name="export">Xuất</string>
+    <string name="export_format">Định dạng</string>
+    <string name="export_quality">Chất lượng</string>
+    <string name="export_start">Bắt đầu xuất</string>
+    <string name="export_completed">Xuất hoàn tất</string>
+</resources>

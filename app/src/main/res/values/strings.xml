@@ -1,0 +1,190 @@
+<resources>
+    <string name="app_name">UseSuno MV Studio</string>
+
+    <!-- Main UI -->
+    <string name="new_project">New Project</string>
+    <string name="open_project">Open Project</string>
+    <string name="save_project">Save Project</string>
+    <string name="export_video">Export Video</string>
+    <string name="settings">Settings</string>
+    <string name="language">Language</string>
+    <string name="theme">Theme</string>
+    <string name="dark_mode">Dark Mode</string>
+
+    <!-- Editor -->
+    <string name="import_audio">Import Audio</string>
+    <string name="import_lyrics">Import Lyrics</string>
+    <string name="paste_lyrics">Paste Lyrics</string>
+    <string name="edit_lyrics">Edit Lyrics</string>
+    <string name="timeline">Timeline</string>
+    <string name="inspector">Inspector</string>
+    <string name="preview">Preview</string>
+    <string name="play">Play</string>
+    <string name="pause">Pause</string>
+    <string name="stop">Stop</string>
+    <string name="seek">Seek</string>
+
+    <!-- Templates -->
+    <string name="template">Template</string>
+    <string name="template_fume">Fume</string>
+    <string name="template_classic">Classic</string>
+    <string name="template_cadenza">Cadenza</string>
+    <string name="template_partita">Partita</string>
+    <string name="template_tilt">Tilt</string>
+    <string name="template_claddagh">Claddagh</string>
+    <string name="template_monet">Monet</string>
+    <string name="template_cappella">Cappella</string>
+    <string name="template_diorama">Diorama</string>
+    <string name="template_aurora_traverse">Aurora Traverse</string>
+    <string name="template_pendolo">Pendolo</string>
+    <string name="template_tempera">Tempera</string>
+    <string name="template_sonnet">Sonnet</string>
+    <string name="template_still">Still</string>
+    <string name="template_astral">Astral</string>
+    <string name="template_kyoto">Kyoto</string>
+    <string name="template_chroma">Chroma</string>
+    <string name="template_elysium">Elysium</string>
+    <string name="template_syzygy">Syzygy</string>
+    <string name="template_lumiere">Lumiere</string>
+
+    <!-- Template Tuning -->
+    <string name="tuning_speed">Speed</string>
+    <string name="tuning_intensity">Intensity</string>
+    <string name="tuning_complexity">Complexity</string>
+    <string name="tuning_color_shift">Color Shift</string>
+    <string name="tuning_rotation">Rotation</string>
+    <string name="tuning_scale">Scale</string>
+
+    <!-- Backgrounds -->
+    <string name="background">Background</string>
+    <string name="background_custom">Custom</string>
+    <string name="background_theme_space">Theme Space</string>
+    <string name="background_fluid_light">Fluid Light</string>
+    <string name="background_aurora_nebula">Aurora Nebula</string>
+    <string name="background_aurora_curtain">Aurora Curtain</string>
+    <string name="background_light_tide">Light Tide</string>
+    <string name="background_space_starlight">Space Starlight</string>
+    <string name="background_image">Background Image</string>
+    <string name="background_video">Background Video</string>
+    <string name="background_color">Background Color</string>
+    <string name="background_opacity">Opacity</string>
+    <string name="background_blur">Blur</string>
+    <string name="background_scale">Scale</string>
+    <string name="background_animation_speed">Animation Speed</string>
+
+    <!-- Typography -->
+    <string name="typography">Typography</string>
+    <string name="font_family">Font Family</string>
+    <string name="font_weight">Font Weight</string>
+    <string name="font_size">Font Size</string>
+    <string name="line_height">Line Height</string>
+    <string name="letter_spacing">Letter Spacing</string>
+    <string name="text_color">Text Color</string>
+    <string name="stroke_color">Stroke Color</string>
+    <string name="stroke_width">Stroke Width</string>
+    <string name="shadow_color">Shadow Color</string>
+    <string name="shadow_blur">Shadow Blur</string>
+    <string name="shadow_offset_x">Shadow Offset X</string>
+    <string name="shadow_offset_y">Shadow Offset Y</string>
+
+    <!-- Intro -->
+    <string name="intro">Intro</string>
+    <string name="intro_enabled">Enabled</string>
+    <string name="intro_duration">Duration</string>
+    <string name="intro_style">Style</string>
+    <string name="intro_fade">Fade</string>
+    <string name="intro_slide_up">Slide Up</string>
+    <string name="intro_slide_down">Slide Down</string>
+    <string name="intro_zoom">Zoom</string>
+    <string name="intro_typewriter">Typewriter</string>
+    <string name="intro_none">None</string>
+
+    <!-- Audio Reactivity -->
+    <string name="audio_reactivity">Audio Reactivity</string>
+    <string name="audio_reactivity_enabled">Enabled</string>
+    <string name="bass_gain">Bass Gain</string>
+    <string name="low_mid_gain">Low-Mid Gain</string>
+    <string name="mid_gain">Mid Gain</string>
+    <string name="vocal_gain">Vocal Gain</string>
+    <string name="treble_gain">Treble Gain</string>
+    <string name="smoothing">Smoothing</string>
+    <string name="threshold">Threshold</string>
+
+    <!-- Export -->
+    <string name="export">Export</string>
+    <string name="export_format">Format</string>
+    <string name="export_format_mp4">MP4</string>
+    <string name="export_format_webm">WebM</string>
+    <string name="export_quality">Quality</string>
+    <string name="export_quality_low">Low</string>
+    <string name="export_quality_medium">Medium</string>
+    <string name="export_quality_high">High</string>
+    <string name="export_quality_lossless">Lossless</string>
+    <string name="export_fps">Frame Rate</string>
+    <string name="export_resolution">Resolution</string>
+    <string name="export_aspect_ratio">Aspect Ratio</string>
+    <string name="export_include_audio">Include Audio</string>
+    <string name="export_start">Start Export</string>
+    <string name="export_cancel">Cancel</string>
+    <string name="export_estimated_time">Estimated time: %s</string>
+    <string name="export_progress">Exporting… %d%%</string>
+    <string name="export_completed">Export completed</string>
+    <string name="export_failed">Export failed: %s</string>
+
+    <!-- Resolutions -->
+    <string name="resolution_720p">720p (1280×720)</string>
+    <string name="resolution_1080p">1080p (1920×1080)</string>
+    <string name="resolution_1440p">1440p (2560×1440)</string>
+    <string name="resolution_2160p">4K (3840×2160)</string>
+
+    <!-- Aspect Ratios -->
+    <string name="aspect_ratio_16_9">16:9 (Landscape)</string>
+    <string name="aspect_ratio_9_16">9:16 (Portrait)</string>
+    <string name="aspect_ratio_1_1">1:1 (Square)</string>
+    <string name="aspect_ratio_4_3">4:3</string>
+    <string name="aspect_ratio_3_4">3:4</string>
+
+    <!-- Project -->
+    <string name="project_name">Project Name</string>
+    <string name="untitled_project">Untitled Project</string>
+    <string name="project_saved">Project saved</string>
+    <string name="project_loaded">Project loaded</string>
+
+    <!-- Lyrics -->
+    <string name="lyrics">Lyrics</string>
+    <string name="lyric_line">Line</string>
+    <string name="lyric_word">Word</string>
+    <string name="add_line">Add Line</string>
+    <string name="delete_line">Delete Line</string>
+    <string name="split_line">Split Line</string>
+    <string name="merge_lines">Merge Lines</string>
+    <string name="word_timing">Word Timing</string>
+    <string name="global_offset">Global Offset</string>
+    <string name="precision_line">Line Level</string>
+    <string name="precision_word">Word Level</string>
+    <string name="precision_syllable">Syllable Level</string>
+
+    <!-- Timestamp Screen -->
+    <string name="timestamp_editor">Timestamp Editor</string>
+    <string name="tap_timing">Tap to set timing</string>
+    <string name="auto_segment">Auto Segment</string>
+    <string name="clear_timing">Clear Timing</string>
+
+    <!-- Errors -->
+    <string name="error_no_audio">No audio file selected</string>
+    <string name="error_no_lyrics">No lyrics found</string>
+    <string name="error_export_failed">Export failed</string>
+    <string name="error_import_failed">Import failed</string>
+    <string name="error_save_failed">Save failed</string>
+
+    <!-- Accessibility -->
+    <string name="close">Close</string>
+    <string name="done">Done</string>
+    <string name="confirm">Confirm</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+    <string name="copy">Copy</string>
+    <string name="paste">Paste</string>
+    <string name="select_all">Select All</string>
+</resources>

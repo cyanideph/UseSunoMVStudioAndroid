@@ -1,0 +1,32 @@
+<resources>
+    <string name="app_name">UseSuno MV Studio</string>
+
+    <string name="new_project">Bagong Proyekto</string>
+    <string name="open_project">Buksan ang Proyekto</string>
+    <string name="save_project">I-save ang Proyekto</string>
+    <string name="export_video">I-export ang Video</string>
+    <string name="settings">Mga Setting</string>
+    <string name="language">Wika</string>
+
+    <string name="import_audio">I-import ang Audio</string>
+    <string name="import_lyrics">I-import ang Lyrics</string>
+    <string name="paste_lyrics">I-paste ang Lyrics</string>
+    <string name="edit_lyrics">I-edit ang Lyrics</string>
+    <string name="timeline">Timeline</string>
+    <string name="preview">Preview</string>
+    <string name="play">Play</string>
+    <string name="pause">Pause</string>
+
+    <string name="template">Template</string>
+    <string name="template_fume">Usok</string>
+    <string name="template_classic">Klasik</string>
+
+    <string name="background">Background</string>
+    <string name="background_custom">Custom</string>
+
+    <string name="export">Export</string>
+    <string name="export_format">Format</string>
+    <string name="export_quality">Quality</string>
+    <string name="export_start">Simulan ang Export</string>
+    <string name="export_completed">Tapos na ang Export</string>
+</resources>

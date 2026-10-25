@@ -1,0 +1,32 @@
+<resources>
+    <string name="app_name">UseSuno MV Studio</string>
+
+    <string name="new_project">नया प्रोजेक्ट</string>
+    <string name="open_project">प्रोजेक्ट खोलें</string>
+    <string name="save_project">प्रोजेक्ट सहेजें</string>
+    <string name="export_video">वीडियो निर्यात करें</string>
+    <string name="settings">सेटिंग्स</string>
+    <string name="language">भाषा</string>
+
+    <string name="import_audio">ऑडियो आयात करें</string>
+    <string name="import_lyrics">गाने के बोल आयात करें</string>
+    <string name="paste_lyrics">गाने के बोल चिपकाएं</string>
+    <string name="edit_lyrics">गाने के बोल संपादित करें</string>
+    <string name="timeline">टाइमलाइन</string>
+    <string name="preview">पूर्वावलोकन</string>
+    <string name="play">चलाएं</string>
+    <string name="pause">रोकें</string>
+
+    <string name="template">टेम्पलेट</string>
+    <string name="template_fume">धुआं</string>
+    <string name="template_classic">क्लासिक</string>
+
+    <string name="background">पृष्ठभूमि</string>
+    <string name="background_custom">कस्टम</string>
+
+    <string name="export">निर्यात</string>
+    <string name="export_format">प्रारूप</string>
+    <string name="export_quality">गुणवत्ता</string>
+    <string name="export_start">निर्यात शुरू करें</string>
+    <string name="export_completed">निर्यात पूर्ण</string>
+</resources>

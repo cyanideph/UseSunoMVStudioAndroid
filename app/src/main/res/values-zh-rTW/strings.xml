@@ -1,0 +1,60 @@
+<resources>
+    <string name="app_name">UseSuno MV Studio</string>
+
+    <string name="new_project">新建專案</string>
+    <string name="open_project">開啟專案</string>
+    <string name="save_project">儲存專案</string>
+    <string name="export_video">匯出影片</string>
+    <string name="settings">設定</string>
+    <string name="language">語言</string>
+    <string name="theme">主題</string>
+    <string name="dark_mode">深色模式</string>
+
+    <string name="import_audio">匯入音訊</string>
+    <string name="import_lyrics">匯入歌詞</string>
+    <string name="paste_lyrics">貼上歌詞</string>
+    <string name="edit_lyrics">編輯歌詞</string>
+    <string name="timeline">時間軸</string>
+    <string name="inspector">檢查器</string>
+    <string name="preview">預覽</string>
+    <string name="play">播放</string>
+    <string name="pause">暫停</string>
+    <string name="stop">停止</string>
+
+    <string name="template">模板</string>
+    <string name="template_fume">煙霧</string>
+    <string name="template_classic">經典</string>
+    <string name="template_cadenza">華彩樂段</string>
+    <string name="template_partita">組曲</string>
+    <string name="template_tilt">傾斜</string>
+    <string name="template_claddagh">克拉達</string>
+    <string name="template_monet">莫內</string>
+    <string name="template_cappella">卡佩拉</string>
+    <string name="template_diorama">全景</string>
+    <string name="template_aurora_traverse">極光穿越</string>
+    <string name="template_pendolo">擺</string>
+    <string name="template_tempera">蛋彩</string>
+    <string name="template_sonnet">十四行詩</string>
+    <string name="template_still">靜止</string>
+    <string name="template_astral">星界</string>
+    <string name="template_kyoto">京都</string>
+    <string name="template_chroma">色度</string>
+    <string name="template_elysium">極樂世界</string>
+    <string name="template_syzygy">連珠</string>
+    <string name="template_lumiere">光影</string>
+
+    <string name="background">背景</string>
+    <string name="background_custom">自訂</string>
+    <string name="background_theme_space">主題空間</string>
+    <string name="background_fluid_light">流體光</string>
+    <string name="background_aurora_nebula">極光星雲</string>
+    <string name="background_aurora_curtain">極光簾</string>
+    <string name="background_light_tide">光潮</string>
+    <string name="background_space_starlight">星空</string>
+
+    <string name="export">匯出</string>
+    <string name="export_format">格式</string>
+    <string name="export_quality">品質</string>
+    <string name="export_start">開始匯出</string>
+    <string name="export_completed">匯出完成</string>
+</resources>

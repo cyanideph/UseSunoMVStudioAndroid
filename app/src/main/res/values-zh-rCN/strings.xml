@@ -1,0 +1,87 @@
+<resources>
+    <string name="app_name">UseSuno MV Studio</string>
+
+    <string name="new_project">新建项目</string>
+    <string name="open_project">打开项目</string>
+    <string name="save_project">保存项目</string>
+    <string name="export_video">导出视频</string>
+    <string name="settings">设置</string>
+    <string name="language">语言</string>
+    <string name="theme">主题</string>
+    <string name="dark_mode">深色模式</string>
+
+    <string name="import_audio">导入音频</string>
+    <string name="import_lyrics">导入歌词</string>
+    <string name="paste_lyrics">粘贴歌词</string>
+    <string name="edit_lyrics">编辑歌词</string>
+    <string name="timeline">时间轴</string>
+    <string name="inspector">检查器</string>
+    <string name="preview">预览</string>
+    <string name="play">播放</string>
+    <string name="pause">暂停</string>
+    <string name="stop">停止</string>
+
+    <string name="template">模板</string>
+    <string name="template_fume">烟雾</string>
+    <string name="template_classic">经典</string>
+    <string name="template_cadenza">华彩乐段</string>
+    <string name="template_partita">组曲</string>
+    <string name="template_tilt">倾斜</string>
+    <string name="template_claddagh">克拉达</string>
+    <string name="template_monet">莫奈</string>
+    <string name="template_cappella">卡佩拉</string>
+    <string name="template_diorama">全景</string>
+    <string name="template_aurora_traverse">极光穿越</string>
+    <string name="template_pendolo">摆</string>
+    <string name="template_tempera">蛋彩</string>
+    <string name="template_sonnet">十四行诗</string>
+    <string name="template_still">静止</string>
+    <string name="template_astral">星界</string>
+    <string name="template_kyoto">京都</string>
+    <string name="template_chroma">色度</string>
+    <string name="template_elysium">极乐世界</string>
+    <string name="template_syzygy">连珠</string>
+    <string name="template_lumiere">光影</string>
+
+    <string name="tuning_speed">速度</string>
+    <string name="tuning_intensity">强度</string>
+    <string name="tuning_complexity">复杂度</string>
+    <string name="tuning_color_shift">色相偏移</string>
+
+    <string name="background">背景</string>
+    <string name="background_custom">自定义</string>
+    <string name="background_theme_space">主题空间</string>
+    <string name="background_fluid_light">流体光</string>
+    <string name="background_aurora_nebula">极光星云</string>
+    <string name="background_aurora_curtain">极光帘</string>
+    <string name="background_light_tide">光潮</string>
+    <string name="background_space_starlight">星空</string>
+
+    <string name="typography">排版</string>
+    <string name="font_family">字体</string>
+    <string name="font_weight">字重</string>
+    <string name="font_size">字号</string>
+    <string name="line_height">行高</string>
+    <string name="letter_spacing">字间距</string>
+
+    <string name="intro">片头</string>
+    <string name="intro_enabled">启用</string>
+    <string name="intro_duration">时长</string>
+    <string name="intro_style">样式</string>
+
+    <string name="audio_reactivity">音频反应</string>
+    <string name="bass_gain">低音增益</string>
+    <string name="low_mid_gain">低中音增益</string>
+    <string name="mid_gain">中音增益</string>
+    <string name="vocal_gain">人声增益</string>
+    <string name="treble_gain">高音增益</string>
+
+    <string name="export">导出</string>
+    <string name="export_format">格式</string>
+    <string name="export_quality">质量</string>
+    <string name="export_fps">帧率</string>
+    <string name="export_resolution">分辨率</string>
+    <string name="export_aspect_ratio">宽高比</string>
+    <string name="export_start">开始导出</string>
+    <string name="export_completed">导出完成</string>
+</resources>

@@ -1,0 +1,32 @@
+<resources>
+    <string name="app_name">UseSuno MV Studio</string>
+
+    <string name="new_project">Новый проект</string>
+    <string name="open_project">Открыть проект</string>
+    <string name="save_project">Сохранить проект</string>
+    <string name="export_video">Экспортировать видео</string>
+    <string name="settings">Настройки</string>
+    <string name="language">Язык</string>
+
+    <string name="import_audio">Импортировать аудио</string>
+    <string name="import_lyrics">Импортировать текст</string>
+    <string name="paste_lyrics">Вставить текст</string>
+    <string name="edit_lyrics">Редактировать текст</string>
+    <string name="timeline">Временная шкала</string>
+    <string name="preview">Предпросмотр</string>
+    <string name="play">Воспроизвести</string>
+    <string name="pause">Пауза</string>
+
+    <string name="template">Шаблон</string>
+    <string name="template_fume">Дым</string>
+    <string name="template_classic">Классика</string>
+
+    <string name="background">Фон</string>
+    <string name="background_custom">Пользовательский</string>
+
+    <string name="export">Экспорт</string>
+    <string name="export_format">Формат</string>
+    <string name="export_quality">Качество</string>
+    <string name="export_start">Начать экспорт</string>
+    <string name="export_completed">Экспорт завершен</string>
+</resources>
