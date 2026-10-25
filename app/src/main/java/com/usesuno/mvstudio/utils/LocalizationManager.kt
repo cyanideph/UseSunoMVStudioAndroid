@@ -4,10 +4,9 @@ import android.content.Context
 import android.content.res.Configuration
 import android.content.res.Resources
 import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.PreferencesKeys
+import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.preferencesKey
-import androidx.datastore.preferences.rx.preferences
+import androidx.datastore.preferences.core.stringPreferencesKey
 import com.usesuno.mvstudio.di.UseSunoMVStudioApplication
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -21,7 +20,7 @@ import java.util.Locale
 class LocalizationManager(private val context: Context) {
 
     private val dataStore = context.preferencesDataStore("localization_prefs")
-    private val LOCALE_KEY = preferencesKey<String>("selected_locale")
+    private val LOCALE_KEY = stringPreferencesKey("selected_locale")
 
     // Supported languages matching web version
     val supportedLocales = listOf(
@@ -44,7 +43,7 @@ class LocalizationManager(private val context: Context) {
      * Get current locale (from DataStore or system default)
      */
     suspend fun getCurrentLocale(): Locale {
-        val prefs = dataStore.data.firstOrNull() ?: Preferences()
+        val prefs = dataStore.data.firstOrNull() ?: emptyPreferences()
         val localeTag = prefs[LOCALE_KEY] ?: Locale.getDefault().toLanguageTag()
         return Locale.forLanguageTag(localeTag)
     }
