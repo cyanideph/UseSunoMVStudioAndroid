@@ -36,13 +36,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.lifecycleScope
 import com.usesuno.mvstudio.domain.model.LyricLine
 import com.usesuno.mvstudio.domain.model.LyricWord
 import com.usesuno.mvstudio.domain.model.Project
 import com.usesuno.mvstudio.presentation.components.WaveformView
 import com.usesuno.mvstudio.ui.theme.UseSunoMVStudioTheme
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -76,7 +74,7 @@ fun TimestampScreen(
     DisposableEffect(isPlaying) {
         var job: kotlinx.coroutines.Job? = null
         if (isPlaying) {
-            job = lifecycleScope.launch {
+            job = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
                 while (isPlaying && currentTime < duration) {
                     currentTime = mediaPlayer.currentPosition / 1000.0
                     delay(50)
@@ -141,8 +139,8 @@ fun TimestampScreen(
                             Slider(
                                 value = (globalOffset + 10).toFloat(), // -10 to +10
                                 onValueChange = { v ->
-                                    globalOffset = v - 10
-                                    onProjectChange(project.copy(globalOffset = v - 10))
+                                    globalOffset = (v - 10).toDouble()
+                                    onProjectChange(project.copy(globalOffset = (v - 10).toDouble()))
                                 },
                                 valueRange = 0f..20f,
                                 modifier = Modifier.fillMaxWidth(),
