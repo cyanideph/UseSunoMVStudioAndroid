@@ -60,8 +60,8 @@ class CustomBackgroundRenderer : BackgroundRenderer {
             val scaledWidth = (bitmap!!.width * scale).toInt()
             val scaledHeight = (bitmap!!.height * scale).toInt()
 
-            val left = bounds.centerX() - scaledWidth / 2 + config.offsetX
-            val top = bounds.centerY() - scaledHeight / 2 + config.offsetY
+            val left = (bounds.centerX() - scaledWidth / 2 + config.offsetX).toInt()
+            val top = (bounds.centerY() - scaledHeight / 2 + config.offsetY).toInt()
 
             val dstRect = android.graphics.Rect(left, top, left + scaledWidth, top + scaledHeight)
             canvas.drawBitmap(bitmap!!, null, dstRect, null)
@@ -104,8 +104,8 @@ class ThemeSpaceRenderer : BackgroundRenderer {
 
         val colors = intArrayOf(
             android.graphics.Color.parseColor(config.color),
-            android.graphics.Color.HSVToColor(255, floatArrayOf((timeOffset * 30) % 360, 0.6f, 0.3f)),
-            android.graphics.Color.HSVToColor(255, floatArrayOf((timeOffset * 30 + 120) % 360, 0.5f, 0.2f)),
+            android.graphics.Color.HSVToColor(255, floatArrayOf(((timeOffset * 30) % 360).toFloat(), 0.6f, 0.3f)),
+            android.graphics.Color.HSVToColor(255, floatArrayOf(((timeOffset * 30 + 120) % 360).toFloat(), 0.5f, 0.2f)),
             android.graphics.Color.BLACK,
         )
 
@@ -350,10 +350,10 @@ class AuroraCurtainRenderer : BackgroundRenderer {
 
             for (i in 0..segments) {
                 val t = i / segments.toFloat()
-                val y = t * bounds.height()
-                val waveX = curtain.x + sin(curtain.phase + t * 6 * PI) * curtain.width * 0.3f
-                    + sin(curtain.phase * 1.3f + t * 12 * PI) * curtain.width * 0.15f
-                    + sin(curtain.phase * 0.7f + t * 3 * PI) * curtain.width * 0.1f
+                val y = (t * bounds.height()).toFloat()
+                val waveX = curtain.x + (sin(curtain.phase + t * 6 * PI) * curtain.width * 0.3).toFloat()
+                    + (sin(curtain.phase * 1.3f + t * 12 * PI) * curtain.width * 0.15).toFloat()
+                    + (sin(curtain.phase * 0.7f + t * 3 * PI) * curtain.width * 0.1).toFloat()
 
                 if (i == 0) {
                     path.moveTo(waveX, y)
@@ -365,8 +365,8 @@ class AuroraCurtainRenderer : BackgroundRenderer {
             // Glow
             paint.style = android.graphics.Paint.Style.FILL
             val glowPath = android.graphics.Path(path)
-            glowPath.lineTo(bounds.right, bounds.bottom)
-            glowPath.lineTo(bounds.left, bounds.bottom)
+            glowPath.lineTo(bounds.right.toFloat(), bounds.bottom.toFloat())
+            glowPath.lineTo(bounds.left.toFloat(), bounds.bottom.toFloat())
             glowPath.close()
             paint.color = android.graphics.Color.HSVToColor(20, floatArrayOf(curtain.hue, 0.9f, 0.8f))
             canvas.drawPath(glowPath, paint)
@@ -430,8 +430,8 @@ class LightTideRenderer : BackgroundRenderer {
             val segments = 100
 
             for (i in 0..segments) {
-                val x = i * bounds.width() / segments
-                val y = wave.y + sin(wave.phase + x / wave.wavelength * 2 * PI) * wave.amplitude * (1f + audioBass)
+                val x = (i * bounds.width() / segments).toFloat()
+                val y = wave.y + (sin(wave.phase + x / wave.wavelength * 2 * PI) * wave.amplitude).toFloat() * (1f + audioBass)
 
                 if (i == 0) {
                     path.moveTo(x, y)
@@ -441,8 +441,8 @@ class LightTideRenderer : BackgroundRenderer {
             }
 
             // Close to bottom
-            path.lineTo(bounds.right, bounds.bottom)
-            path.lineTo(bounds.left, bounds.bottom)
+            path.lineTo(bounds.right.toFloat(), bounds.bottom.toFloat())
+            path.lineTo(bounds.left.toFloat(), bounds.bottom.toFloat())
             path.close()
 
             val alpha = (80 * (1f + audioPower * 0.5f)).toInt()
