@@ -5,6 +5,9 @@ import android.graphics.Paint
 import android.graphics.Rect
 import com.usesuno.mvstudio.domain.model.*
 import com.usesuno.mvstudio.render.engine.Canvas2DRenderer
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sin
 
 /**
  * Astral template - 3D starfield with lyrics floating in space
