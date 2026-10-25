@@ -2,103 +2,84 @@ package com.usesuno.mvstudio.utils
 
 import android.content.Context
 import android.content.res.Configuration
-import android.content.res.Resources
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import com.usesuno.mvstudio.di.UseSunoMVStudioApplication
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.io.IOException
 import java.util.Locale
 
-/**
- * Localization manager for 11 languages
- * Matches UseSunoMVStudio's i18n.ts (EN, ZH-CN, ZH-TW, ID, HI, PT-BR, TL, DE, UR, RU, VI)
- */
+private val Context.localizationDataStore: DataStore<Preferences> by preferencesDataStore(
+    name = "localization_prefs",
+)
+
+/** Localization manager for the languages supported by the web version. */
 class LocalizationManager(private val context: Context) {
+    private val dataStore = context.localizationDataStore
+    private val localeKey = stringPreferencesKey("selected_locale")
 
-    private val dataStore: DataStore<Preferences> = context.preferencesDataStore("localization_prefs")
-    private val LOCALE_KEY = stringPreferencesKey("selected_locale")
-
-    // Supported languages matching web version
     val supportedLocales = listOf(
-        Locale("en"),       // English
-        Locale("zh", "CN"), // Chinese Simplified
-        Locale("zh", "TW"), // Chinese Traditional
-        Locale("id"),       // Indonesian
-        Locale("hi"),       // Hindi
-        Locale("pt", "BR"), // Portuguese (Brazil)
-        Locale("tl"),       // Tagalog
-        Locale("de"),       // German
-        Locale("ur"),       // Urdu
-        Locale("ru"),       // Russian
-        Locale("vi"),       // Vietnamese
+        Locale("en"),
+        Locale("zh", "CN"),
+        Locale("zh", "TW"),
+        Locale("id"),
+        Locale("hi"),
+        Locale("pt", "BR"),
+        Locale("tl"),
+        Locale("de"),
+        Locale("ur"),
+        Locale("ru"),
+        Locale("vi"),
     )
 
-    val supportedLocaleCodes = supportedLocales.map { it.toLanguageTag() }
+    val supportedLocaleCodes = supportedLocales.map(Locale::toLanguageTag)
 
-    /**
-     * Get current locale (from DataStore or system default)
-     */
     suspend fun getCurrentLocale(): Locale {
-        val prefs = dataStore.data.firstOrNull() ?: Preferences.empty()
-        val localeTag = prefs[LOCALE_KEY] ?: Locale.getDefault().toLanguageTag()
+        val preferences = dataStore.data
+            .catch { error ->
+                if (error is IOException) emit(emptyPreferences()) else throw error
+            }
+            .first()
+        val localeTag = preferences[localeKey] ?: Locale.getDefault().toLanguageTag()
         return Locale.forLanguageTag(localeTag)
     }
 
-    /**
-     * Set locale and persist
-     */
     suspend fun setLocale(locale: Locale) {
-        dataStore.edit { prefs ->
-            prefs[LOCALE_KEY] = locale.toLanguageTag()
+        dataStore.edit { preferences ->
+            preferences[localeKey] = locale.toLanguageTag()
         }
         applyLocale(locale)
     }
 
-    /**
-     * Apply locale to app context
-     */
     fun applyLocale(locale: Locale) {
-        val res = context.resources
-        val config = Configuration(res.configuration)
-        config.setLocale(locale)
-        res.updateConfiguration(config, res.displayMetrics)
+        val resources = context.resources
+        val configuration = Configuration(resources.configuration)
+        configuration.setLocale(locale)
+        @Suppress("DEPRECATION")
+        resources.updateConfiguration(configuration, resources.displayMetrics)
     }
 
-    /**
-     * Initialize locale on app start
-     */
-    fun initialize() {
-        CoroutineScope(Dispatchers.IO).launch {
-            val locale = getCurrentLocale()
-            applyLocale(locale)
+    fun initialize(scope: CoroutineScope = CoroutineScope(Dispatchers.IO)) {
+        scope.launch {
+            applyLocale(getCurrentLocale())
         }
     }
 
-    /**
-     * Get display name for locale in current locale
-     */
-    suspend fun getLocaleDisplayName(locale: Locale): String {
-        val currentLocale = getCurrentLocale()
-        return locale.getDisplayName(currentLocale)
-    }
+    suspend fun getLocaleDisplayName(locale: Locale): String =
+        locale.getDisplayName(getCurrentLocale())
 
-    /**
-     * Get locale from language code
-     */
-    fun getLocaleFromCode(code: String): Locale? {
-        return supportedLocales.find { it.toLanguageTag() == code }
-    }
+    fun getLocaleFromCode(code: String): Locale? =
+        supportedLocales.find { it.toLanguageTag() == code }
 }
 
-/**
- * Extension to get string resources with locale
- */
-fun Context.getStringWithLocale(@Suppress("UNUSED_PARAMETER") locale: Locale, @Suppress("UNUSED_PARAMETER") resId: Int): String {
-    // Implementation would use Resources.getString with locale-specific configuration
-    return getString(resId)
-}
+fun Context.getStringWithLocale(
+    @Suppress("UNUSED_PARAMETER") locale: Locale,
+    @Suppress("UNUSED_PARAMETER") resId: Int,
+): String = getString(resId)
