@@ -5,6 +5,7 @@ import com.usesuno.mvstudio.domain.model.LyricWord
 import com.usesuno.mvstudio.domain.model.Precision
 import java.util.regex.Pattern
 import java.util.UUID
+import kotlin.math.max
 
 /**
  * Lyrics parser ported from UseSunoMVStudio's import/lyrics.ts
