@@ -2,6 +2,7 @@ package com.usesuno.mvstudio.render.export
 
 import android.media.MediaCodec
 import android.media.MediaCodecInfo
+import android.media.MediaCodecList
 import android.media.MediaFormat
 import android.media.MediaMuxer
 import android.graphics.Bitmap
@@ -34,11 +35,12 @@ class VideoExporter(
     private var renderer: RenderEngine? = null
     private var videoEncoder: MediaCodec? = null
     private var audioExtractor: android.media.MediaExtractor? = null
-    private var audioDecoder: MediaCodec? = null
     private var muxer: MediaMuxer? = null
     private var videoTrackIndex = -1
     private var audioTrackIndex = -1
     private var muxerStarted = false
+    private var inputColorFormat = MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar
+    private var audioTrackFormat: MediaFormat? = null
 
     private val width: Int
     private val height: Int
@@ -87,6 +89,8 @@ class VideoExporter(
         width = w
         height = h
 
+        require(w % 2 == 0 && h % 2 == 0) { "Video dimensions must be even for YUV 4:2:0 encoding" }
+        require(project.exportFps in 1..60) { "Frame rate must be between 1 and 60 fps" }
         fps = project.exportFps
         bitrate = when (project.exportQuality) {
             ExportQuality.LOW -> 5_000_000
@@ -101,12 +105,14 @@ class VideoExporter(
      */
     suspend fun export(): Result<File> = withContext(Dispatchers.IO) {
         try {
+            require(audioAnalysis.duration > 0.0) { "Cannot export a project with no audio duration" }
+            require(outputFile.parentFile?.let { it.exists() || it.mkdirs() } != false) { "Unable to create output directory" }
             initializeEncoder()
             initializeMuxer()
             initializeAudio()
 
-            val frameDurationUs = (1_000_000 / fps).toLong()
-            val totalFrames = (audioAnalysis.duration * fps).toLong()
+            val frameDurationUs = 1_000_000L / fps
+            val totalFrames = kotlin.math.ceil(audioAnalysis.duration * fps).toLong().coerceAtLeast(1L)
 
             renderer = RendererFactory.createRenderer(project.template)
             renderer?.initialize(project, width, height)
@@ -121,8 +127,10 @@ class VideoExporter(
             while (frameIndex < totalFrames && !cancellationToken.get()) {
                 val time = frameIndex.toDouble() / fps
 
-                // Get audio frame for this time
-                val audioFrame = audioAnalysis.frames.findLast { it.time <= time }
+                // Analysis frames are ordered, so find the nearest preceding frame without
+                // rescanning the entire analysis for every output frame.
+                val audioFrame = audioAnalysis.frames.binarySearchBy(time) { it.time }
+                    .let { index -> audioAnalysis.frames.getOrNull(if (index >= 0) index else (-index - 2)) }
 
                 // Render frame
                 canvas.drawColor(android.graphics.Color.TRANSPARENT, android.graphics.PorterDuff.Mode.CLEAR)
@@ -141,98 +149,93 @@ class VideoExporter(
 
             // Signal end of video stream
             signalEndOfVideoStream()
-
-            // Drain audio
             drainAudio()
-
-            // Finalize
             finalizeExport()
 
-            renderer?.dispose()
-            cleanup()
-
+            if (cancellationToken.get()) {
+                outputFile.delete()
+                return@withContext Result.failure(InterruptedException("Export cancelled"))
+            }
+            progressCallback(1.0)
             Result.success(outputFile)
         } catch (e: Exception) {
-            cleanup()
+            outputFile.delete()
             Result.failure(e)
+        } finally {
+            renderer?.dispose()
+            cleanup()
         }
     }
 
     private fun initializeEncoder() {
-        val mime = when (project.exportFormat) {
-            ExportFormat.MP4 -> MediaFormat.MIMETYPE_VIDEO_AVC
-            ExportFormat.WEBM -> MediaFormat.MIMETYPE_VIDEO_VP8
-        }
+        require(project.exportFormat == ExportFormat.MP4) { "WebM export is not supported by the Android muxer path yet" }
+        val mime = MediaFormat.MIMETYPE_VIDEO_AVC
 
         val format = MediaFormat.createVideoFormat(mime, width, height)
         format.setInteger(MediaFormat.KEY_BIT_RATE, bitrate)
         format.setInteger(MediaFormat.KEY_FRAME_RATE, fps)
-        format.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface)
+        val codecInfo = MediaCodecList(MediaCodecList.REGULAR_CODECS).codecInfos.firstOrNull { info ->
+            info.isEncoder && info.supportedTypes.any { it.equals(mime, ignoreCase = true) } &&
+                info.getCapabilitiesForType(mime).colorFormats.any {
+                    it == MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar ||
+                        it == MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar
+                }
+        } ?: throw IllegalStateException("No byte-buffer YUV encoder available for $mime")
+        val capabilities = codecInfo.getCapabilitiesForType(mime)
+        val colorFormat = when {
+            capabilities.colorFormats.contains(MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar) -> MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar
+            else -> MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar
+        }
+        inputColorFormat = colorFormat
+        format.setInteger(MediaFormat.KEY_COLOR_FORMAT, colorFormat)
         format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1)
-        format.setInteger(MediaFormat.KEY_PROFILE, MediaCodecInfo.CodecProfileLevel.AVCProfileHigh)
-        format.setInteger(MediaFormat.KEY_LEVEL, MediaCodecInfo.CodecProfileLevel.AVCLevel41)
+        if (mime == MediaFormat.MIMETYPE_VIDEO_AVC) {
+            format.setInteger(MediaFormat.KEY_PROFILE, MediaCodecInfo.CodecProfileLevel.AVCProfileHigh)
+        }
 
-        videoEncoder = MediaCodec.createEncoderByType(mime)
+        videoEncoder = MediaCodec.createByCodecName(codecInfo.name)
         videoEncoder!!.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
         videoEncoder!!.start()
     }
 
     private fun initializeMuxer() {
         val outputPath = outputFile.absolutePath
-        muxer = MediaMuxer(outputPath, when (project.exportFormat) {
-            ExportFormat.MP4 -> MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4
-            ExportFormat.WEBM -> MediaMuxer.OutputFormat.MUXER_OUTPUT_WEBM
-        })
+        muxer = MediaMuxer(outputPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
     }
 
     private fun initializeAudio() {
         audioExtractor = android.media.MediaExtractor()
         audioExtractor!!.setDataSource(audioFilePath)
 
-        // Find audio track
+        // Keep the source format until the video encoder reports its output format; muxer
+        // tracks must be added before start, but source audio samples can be drained later.
         for (i in 0 until audioExtractor!!.trackCount) {
             val format = audioExtractor!!.getTrackFormat(i)
             if (format.getString(MediaFormat.KEY_MIME)?.startsWith("audio/") == true) {
                 audioExtractor!!.selectTrack(i)
-                audioTrackIndex = i
+                audioTrackFormat = format
                 break
             }
         }
 
-        if (audioTrackIndex >= 0) {
-            val audioFormat = audioExtractor!!.getTrackFormat(audioTrackIndex)
-            val mime = audioFormat.getString(MediaFormat.KEY_MIME)!!
-
-            audioDecoder = MediaCodec.createDecoderByType(mime)
-            audioDecoder!!.configure(audioFormat, null, null, 0)
-            audioDecoder!!.start()
-        }
+        if (audioTrackFormat == null) throw IllegalArgumentException("Audio file has no audio track")
     }
 
     private fun encodeFrame(bitmap: Bitmap, presentationTimeUs: Long) {
-        val inputSurface = videoEncoder!!.createInputSurface()
-        val eglCore = EglCore()
-        eglCore.makeCurrent(inputSurface)
-
-        try {
-            // Alternative: Use byte buffer encoding
-            encodeFrameToBuffer(bitmap, presentationTimeUs)
-        } finally {
-            eglCore.release()
-            inputSurface.release()
-        }
+        encodeFrameToBuffer(bitmap, presentationTimeUs)
     }
 
     private fun encodeFrameToBuffer(bitmap: Bitmap, presentationTimeUs: Long) {
         // Get input buffer
         val inputBufferIndex = videoEncoder!!.dequeueInputBuffer(10000)
-        if (inputBufferIndex < 0) return
+        if (inputBufferIndex < 0) throw IllegalStateException("Timed out waiting for video encoder input buffer")
 
         val inputBuffer = videoEncoder!!.getInputBuffer(inputBufferIndex)!!
         inputBuffer.clear()
 
         // Convert bitmap to YUV420 (simplified - in production use RenderScript or libyuv)
-        val yuvData = bitmapToYUV420(bitmap)
+        val yuvData = bitmapToYUV420(bitmap, inputColorFormat)
+        require(yuvData.size <= inputBuffer.remaining()) { "Encoded frame exceeds codec input buffer" }
         inputBuffer.put(yuvData)
 
         videoEncoder!!.queueInputBuffer(
@@ -247,7 +250,7 @@ class VideoExporter(
         drainVideoEncoder()
     }
 
-    private fun bitmapToYUV420(bitmap: Bitmap): ByteArray {
+    private fun bitmapToYUV420(bitmap: Bitmap, colorFormat: Int): ByteArray {
         // Simplified conversion - production should use RenderScript or libyuv
         val width = bitmap.width
         val height = bitmap.height
@@ -257,8 +260,11 @@ class VideoExporter(
         val pixels = IntArray(width * height)
         bitmap.getPixels(pixels, 0, width, 0, 0, width, height)
 
+        val ySize = width * height
         var yIndex = 0
-        var uvIndex = width * height
+        var uIndex = ySize
+        var vIndex = ySize + ySize / 4
+        var uvIndex = ySize
 
         for (j in 0 until height) {
             for (i in 0 until width) {
@@ -274,8 +280,13 @@ class VideoExporter(
                 yuv[yIndex++] = y.toByte()
 
                 if (j % 2 == 0 && i % 2 == 0) {
-                    yuv[uvIndex++] = u.toByte()
-                    yuv[uvIndex++] = v.toByte()
+                    if (colorFormat == MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar) {
+                        yuv[uvIndex++] = u.toByte()
+                        yuv[uvIndex++] = v.toByte()
+                    } else {
+                        yuv[uIndex++] = u.toByte()
+                        yuv[vIndex++] = v.toByte()
+                    }
                 }
             }
         }
@@ -283,109 +294,86 @@ class VideoExporter(
         return yuv
     }
 
-    private fun drainVideoEncoder() {
+    private fun drainVideoEncoder(endOfStream: Boolean = false) {
         val bufferInfo = MediaCodec.BufferInfo()
-        while (true) {
-            val outputIndex = videoEncoder!!.dequeueOutputBuffer(bufferInfo, 0)
-            if (outputIndex == MediaCodec.INFO_TRY_AGAIN_LATER) break
+        var sawEndOfStream = false
+        while (!sawEndOfStream) {
+            if (cancellationToken.get()) return
+            val outputIndex = videoEncoder!!.dequeueOutputBuffer(bufferInfo, if (endOfStream) 10_000 else 0)
+            if (outputIndex == MediaCodec.INFO_TRY_AGAIN_LATER) {
+                if (!endOfStream) break
+                continue
+            }
             if (outputIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
                 val newFormat = videoEncoder!!.outputFormat
                 videoTrackIndex = muxer!!.addTrack(newFormat)
-                if (!muxerStarted && audioTrackIndex >= 0) {
-                    muxer!!.start()
-                    muxerStarted = true
-                }
+                val audioFormat = audioTrackFormat ?: throw IllegalStateException("Audio format is unavailable")
+                audioTrackIndex = muxer!!.addTrack(audioFormat)
+                muxer!!.start()
+                muxerStarted = true
             } else if (outputIndex >= 0) {
                 val outputBuffer = videoEncoder!!.getOutputBuffer(outputIndex)!!
-                if (!muxerStarted) {
-                    muxer!!.start()
-                    muxerStarted = true
+                if ((bufferInfo.flags and MediaCodec.BUFFER_FLAG_CODEC_CONFIG) == 0 && bufferInfo.size > 0) {
+                    outputBuffer.position(bufferInfo.offset)
+                    outputBuffer.limit(bufferInfo.offset + bufferInfo.size)
+                    muxer!!.writeSampleData(videoTrackIndex, outputBuffer, bufferInfo)
                 }
-                muxer!!.writeSampleData(videoTrackIndex, outputBuffer, bufferInfo)
+                sawEndOfStream = (bufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0
                 videoEncoder!!.releaseOutputBuffer(outputIndex, false)
             }
         }
     }
 
     private fun signalEndOfVideoStream() {
-        videoEncoder!!.signalEndOfInputStream()
-        drainVideoEncoder()
+        var eosInputIndex = -1
+        while (eosInputIndex < 0 && !cancellationToken.get()) {
+            eosInputIndex = videoEncoder!!.dequeueInputBuffer(10_000)
+        }
+        if (eosInputIndex >= 0) {
+            videoEncoder!!.queueInputBuffer(eosInputIndex, 0, 0, 0L, MediaCodec.BUFFER_FLAG_END_OF_STREAM)
+        }
+        drainVideoEncoder(endOfStream = true)
     }
 
     private fun drainAudio() {
-        if (audioDecoder == null || audioExtractor == null) return
-
+        val extractor = audioExtractor ?: return
+        val trackFormat = audioTrackFormat ?: return
+        val maxInputSize = if (trackFormat.containsKey(MediaFormat.KEY_MAX_INPUT_SIZE)) {
+            trackFormat.getInteger(MediaFormat.KEY_MAX_INPUT_SIZE).coerceAtLeast(4096)
+        } else 1024 * 1024
+        val buffer = ByteBuffer.allocateDirect(maxInputSize)
         val bufferInfo = MediaCodec.BufferInfo()
-        var sawEOS = false
-
-        while (!sawEOS && !cancellationToken.get()) {
-            // Feed input
-            val inputIndex = audioDecoder!!.dequeueInputBuffer(10000)
-            if (inputIndex >= 0) {
-                val buffer = audioDecoder!!.getInputBuffer(inputIndex)!!
-                val sampleSize = audioExtractor!!.readSampleData(buffer, 0)
-                if (sampleSize < 0) {
-                    audioDecoder!!.queueInputBuffer(inputIndex, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM)
-                    sawEOS = true
-                } else {
-                    val presentationTimeUs = audioExtractor!!.sampleTime
-                    audioDecoder!!.queueInputBuffer(inputIndex, 0, sampleSize, presentationTimeUs, 0)
-                    audioExtractor!!.advance()
-                }
-            }
-
-            // Drain output
-            val outputIndex = audioDecoder!!.dequeueOutputBuffer(bufferInfo, 10000)
-            if (outputIndex >= 0) {
-                if ((bufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
-                    sawEOS = true
-                } else {
-                    val outputBuffer = audioDecoder!!.getOutputBuffer(outputIndex)!!
-                    muxer!!.writeSampleData(audioTrackIndex, outputBuffer, bufferInfo)
-                    audioDecoder!!.releaseOutputBuffer(outputIndex, false)
-                }
-            } else if (outputIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
-                val newFormat = audioDecoder!!.outputFormat
-                audioTrackIndex = muxer!!.addTrack(newFormat)
-                if (!muxerStarted) {
-                    muxer!!.start()
-                    muxerStarted = true
-                }
-            }
+        val audioEndUs = (audioAnalysis.duration * 1_000_000).toLong()
+        while (!cancellationToken.get()) {
+            buffer.clear()
+            val size = extractor.readSampleData(buffer, 0)
+            val sampleTimeUs = extractor.sampleTime
+            if (size < 0 || sampleTimeUs < 0 || sampleTimeUs >= audioEndUs) break
+            bufferInfo.set(0, size, sampleTimeUs, extractor.sampleFlags)
+            buffer.position(0)
+            buffer.limit(size)
+            muxer!!.writeSampleData(audioTrackIndex, buffer, bufferInfo)
+            extractor.advance()
         }
     }
 
     private fun finalizeExport() {
-        muxer?.stop()
+        if (muxerStarted) muxer?.stop()
         muxer?.release()
+        muxer = null
+        muxerStarted = false
     }
 
     private fun cleanup() {
-        videoEncoder?.stop()
+        runCatching { videoEncoder?.stop() }
         videoEncoder?.release()
-        audioDecoder?.stop()
-        audioDecoder?.release()
+        videoEncoder = null
         audioExtractor?.release()
+        audioExtractor = null
+        if (muxer != null) runCatching { finalizeExport() }
     }
 
     fun cancel() {
         cancellationToken.set(true)
-    }
-}
-
-/**
- * EGL core for surface rendering
- */
-class EglCore {
-    private var display: javax.microedition.khronos.egl.EGLDisplay = javax.microedition.khronos.egl.EGL10.EGL_NO_DISPLAY
-    private var context: javax.microedition.khronos.egl.EGLContext = javax.microedition.khronos.egl.EGL10.EGL_NO_CONTEXT
-    private var surface: javax.microedition.khronos.egl.EGLSurface = javax.microedition.khronos.egl.EGL10.EGL_NO_SURFACE
-
-    fun makeCurrent(surface: android.view.Surface) {
-        // EGL initialization code here
-    }
-
-    fun release() {
-        // Cleanup
     }
 }

@@ -55,8 +55,8 @@ class MonetRenderer : Canvas2DRenderer(Template.MONET) {
             repeat((midInfluence * 5).toInt()) { spawnStroke() }
         }
 
-        val centerX = bounds.centerX()
-        val centerY = bounds.centerY()
+        val centerX = bounds.centerX().toFloat()
+        val centerY = bounds.centerY().toFloat()
 
         for (stroke in strokes) {
             updateStroke(stroke, time, midInfluence, centerX, centerY)
@@ -72,8 +72,8 @@ class MonetRenderer : Canvas2DRenderer(Template.MONET) {
     }
 
     private fun spawnStroke() {
-        val centerX = bounds.centerX()
-        val centerY = bounds.centerY()
+        val centerX = bounds.centerX().toFloat()
+        val centerY = bounds.centerY().toFloat()
         val radius = min(width, height) * 0.4f
 
         val angle = (Math.random() * 2 * PI).toFloat()
@@ -101,11 +101,11 @@ class MonetRenderer : Canvas2DRenderer(Template.MONET) {
         centerX: Float,
         centerY: Float,
     ) {
-        val dt = 1.0 / 30.0
+        val dt = 1.0f / 30.0f
 
         // Drift with noise
-        stroke.x += cos(stroke.angle + time * 0.5) * stroke.speed * dt
-        stroke.y += sin(stroke.angle + time * 0.5) * stroke.speed * dt
+        stroke.x += cos((stroke.angle + time * 0.5).toFloat()) * stroke.speed * dt
+        stroke.y += sin((stroke.angle + time * 0.5).toFloat()) * stroke.speed * dt
 
         // Rotate slowly
         stroke.angle += 0.1f * dt

@@ -50,8 +50,8 @@ class SonnetRenderer : Canvas2DRenderer(Template.SONNET) {
             spawnFlourish()
         }
 
-        val centerX = bounds.centerX()
-        val centerY = bounds.centerY()
+        val centerX = bounds.centerX().toFloat()
+        val centerY = bounds.centerY().toFloat()
 
         for (flourish in flourishes) {
             flourish.phase += 0.02f * project.templateTuning.speed
@@ -69,8 +69,8 @@ class SonnetRenderer : Canvas2DRenderer(Template.SONNET) {
     }
 
     private fun spawnFlourish() {
-        val centerX = bounds.centerX()
-        val centerY = bounds.centerY()
+        val centerX = bounds.centerX().toFloat()
+        val centerY = bounds.centerY().toFloat()
         val radius = min(width, height) * 0.3f
 
         val angle = (Math.random() * 2 * PI).toFloat()
@@ -96,7 +96,7 @@ class SonnetRenderer : Canvas2DRenderer(Template.SONNET) {
         val petals = 6
 
         for (p in 0 until petals) {
-            val petalAngle = flourish.angle + p * 2 * PI / petals + flourish.phase
+            val petalAngle = flourish.angle + p * 2f * PI.toFloat() / petals + flourish.phase
             val r = flourish.size * (1f - progress * 0.5f) * (0.5f + 0.5f * sin(flourish.phase * 2 + p))
 
             val px = flourish.x + cos(petalAngle) * r

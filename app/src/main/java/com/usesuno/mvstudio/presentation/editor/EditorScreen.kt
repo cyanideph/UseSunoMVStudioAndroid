@@ -13,16 +13,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,13 +47,45 @@ import com.usesuno.mvstudio.ui.theme.UseSunoMVStudioTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+private fun AspectRatioPicker(
+    selected: AspectRatio,
+    onSelected: (AspectRatio) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        TextButton(onClick = { expanded = true }) {
+            Text(aspectRatioLabel(selected))
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            AspectRatio.values().forEach { ratio ->
+                DropdownMenuItem(
+                    text = { Text(aspectRatioLabel(ratio)) },
+                    onClick = { onSelected(ratio); expanded = false },
+                )
+            }
+        }
+    }
+}
+
+private fun aspectRatioLabel(ratio: AspectRatio): String = when (ratio) {
+    AspectRatio.RATIO_16_9 -> "16:9"
+    AspectRatio.RATIO_9_16 -> "9:16"
+    AspectRatio.RATIO_1_1 -> "1:1"
+    AspectRatio.RATIO_4_3 -> "4:3"
+    AspectRatio.RATIO_3_4 -> "3:4"
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
 fun EditorScreen(
     project: Project,
     onProjectChange: (Project) -> Unit,
-    onExportClick: () -> Unit,
+    onExportClick: (com.usesuno.mvstudio.domain.model.ExportFormat, com.usesuno.mvstudio.domain.model.ExportQuality, Int) -> Unit,
     onSettingsClick: () -> Unit,
     onImportAudioClick: () -> Unit,
     onImportLyricsClick: () -> Unit,
+    isAudioPlaying: Boolean,
+    onPlayPauseClick: () -> Unit,
 ) {
     var showInspector by remember { mutableStateOf(true) }
     var showTimeline by remember { mutableStateOf(true) }
@@ -95,9 +127,10 @@ fun EditorScreen(
                         }
 
                         // Aspect ratio
-                        IconButton(onClick = { /* Show aspect ratio picker */ }) {
-                            Icon(painterResource("ic_aspect_ratio"), contentDescription = "Aspect Ratio")
-                        }
+                    AspectRatioPicker(
+                        selected = project.aspectRatio,
+                        onSelected = { ratio -> onProjectChange(project.copy(aspectRatio = ratio)) },
+                    )
 
                         // Import audio
                         IconButton(onClick = onImportAudioClick) {
@@ -135,10 +168,18 @@ fun EditorScreen(
                             .fillMaxHeight()
                             .background(MaterialTheme.colorScheme.surfaceContainerHighest),
                     ) {
-                        StagePreview(
-                            project = project,
-                            modifier = Modifier.fillMaxSize(),
-                        )
+                        Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+                            StagePreview(
+                                project = project,
+                                modifier = Modifier.weight(1f).fillMaxWidth(),
+                            )
+                            androidx.compose.material3.IconButton(onClick = onPlayPauseClick) {
+                                Icon(
+                                    painterResource(if (isAudioPlaying) "ic_pause" else "ic_play_arrow"),
+                                    contentDescription = if (isAudioPlaying) "Pause audio" else "Play audio",
+                                )
+                            }
+                        }
                     }
 
                     // Right panel - Inspector
@@ -172,9 +213,9 @@ fun EditorScreen(
                 ExportDialog(
                     project = project,
                     onDismiss = { showExportDialog = false },
-                    onExport = { format, quality ->
+                    onExport = { format, quality, fps ->
                         showExportDialog = false
-                        onExportClick()
+                        onExportClick(format, quality, fps)
                     },
                 )
             }

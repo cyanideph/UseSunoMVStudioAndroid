@@ -54,8 +54,8 @@ class TemperaRenderer : Canvas2DRenderer(Template.TEMPERA) {
             repeat((trebleInfluence * 3).toInt()) { spawnDrop() }
         }
 
-        val centerX = bounds.centerX()
-        val centerY = bounds.centerY()
+        val centerX = bounds.centerX().toFloat()
+        val centerY = bounds.centerY().toFloat()
 
         for (drop in paintDrops) {
             updateDrop(drop, time, midInfluence, centerX, centerY)
@@ -95,7 +95,7 @@ class TemperaRenderer : Canvas2DRenderer(Template.TEMPERA) {
         centerX: Float,
         centerY: Float,
     ) {
-        val dt = 1.0 / 30.0
+        val dt = 1.0f / 30.0f
 
         // Drift
         drop.x += drop.vx * dt

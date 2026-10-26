@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,6 +18,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -51,8 +54,15 @@ fun Timeline(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                Text("Timeline", fontSize = 14.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
-                Text(formatTime(project.audioDuration), fontSize = 12.sp, color = UseSunoMVStudioTheme.colorScheme.onSurfaceVariant)
+                Text("Lyrics · ${project.lines.size}", fontSize = 14.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (project.lines.isNotEmpty()) {
+                        androidx.compose.material3.TextButton(onClick = { onProjectChange(project.copy(lines = emptyList())) }) {
+                            Text("Clear")
+                        }
+                    }
+                    Text(formatTime(project.audioDuration), fontSize = 12.sp, color = UseSunoMVStudioTheme.colorScheme.onSurfaceVariant)
+                }
             }
 
             // Waveform and lyric tracks
@@ -65,8 +75,30 @@ fun Timeline(
                 // Waveform background
                 // Would draw waveform here
 
-                // Lyric line blocks
-                // Would render lyric blocks as draggable items
+                LazyColumn(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp)) {
+                    items(project.lines, key = { it.id }) { line ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(formatTime(line.start), fontSize = 11.sp, color = UseSunoMVStudioTheme.colorScheme.primary)
+                            OutlinedTextField(
+                                value = line.text,
+                                onValueChange = { text ->
+                                    onProjectChange(project.copy(lines = project.lines.map { if (it.id == line.id) it.copy(text = text) else it }))
+                                },
+                                modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
+                                singleLine = true,
+                                textStyle = androidx.compose.material3.MaterialTheme.typography.bodySmall,
+                            )
+                            Text(formatTime(line.end), fontSize = 11.sp, color = UseSunoMVStudioTheme.colorScheme.onSurfaceVariant)
+                            androidx.compose.material3.TextButton(onClick = {
+                                onProjectChange(project.copy(lines = project.lines.filterNot { it.id == line.id }))
+                            }) { Text("×") }
+                        }
+                    }
+                }
             }
 
             // Scrubber

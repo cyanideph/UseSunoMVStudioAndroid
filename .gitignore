@@ -49,3 +49,8 @@ Thumbs.db
 
 # Room
 **/schemas/
+# Local agent toolchain & REA artifacts
+.toolchain/
+.kotlin/
+.rea-upstream/
+.rea-analysis.json

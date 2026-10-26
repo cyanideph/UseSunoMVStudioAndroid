@@ -4,6 +4,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -32,9 +33,17 @@ fun StagePreview(
     var currentTime by remember { mutableStateOf(0.0) }
     var currentAudioFrame by remember { mutableStateOf<AudioFrame?>(null) }
 
+    val aspectRatio = when (project.aspectRatio) {
+        com.usesuno.mvstudio.domain.model.AspectRatio.RATIO_9_16,
+        com.usesuno.mvstudio.domain.model.AspectRatio.RATIO_3_4 -> 9f / 16f
+        com.usesuno.mvstudio.domain.model.AspectRatio.RATIO_1_1 -> 1f
+        com.usesuno.mvstudio.domain.model.AspectRatio.RATIO_4_3 -> 4f / 3f
+        com.usesuno.mvstudio.domain.model.AspectRatio.RATIO_16_9 -> 16f / 9f
+    }
+
     Box(
         modifier = modifier
-            .fillMaxSize()
+            .aspectRatio(aspectRatio)
             .background(Color.Black),
         contentAlignment = Alignment.Center,
     ) {
@@ -48,10 +57,14 @@ fun StagePreview(
 
     // Initialize renderer
     LaunchedEffect(project.template, project.resolution, project.aspectRatio) {
-        renderer = RendererFactory.createRenderer(project.template)
-        val width = project.resolution.width
-        val height = project.resolution.height
-        renderer?.initialize(project, width, height)
+        renderer?.dispose()
+        renderer = RendererFactory.createRenderer(project.template).also {
+            it.initialize(project, project.resolution.width, project.resolution.height)
+        }
+    }
+
+    androidx.compose.runtime.DisposableEffect(renderer) {
+        onDispose { renderer?.dispose() }
     }
 
     // Update renderer settings when project changes

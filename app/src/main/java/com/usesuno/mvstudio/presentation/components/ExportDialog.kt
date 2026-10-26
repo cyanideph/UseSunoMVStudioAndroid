@@ -38,7 +38,7 @@ import com.usesuno.mvstudio.ui.theme.UseSunoMVStudioTheme
 fun ExportDialog(
     project: Project,
     onDismiss: () -> Unit,
-    onExport: (ExportFormat, ExportQuality) -> Unit,
+    onExport: (ExportFormat, ExportQuality, Int) -> Unit,
 ) {
     var selectedFormat by remember { mutableStateOf(project.exportFormat) }
     var selectedQuality by remember { mutableStateOf(project.exportQuality) }
@@ -160,7 +160,7 @@ fun ExportDialog(
                         Text("Cancel")
                     }
                     androidx.compose.material3.Button(
-                        onClick = { onExport(selectedFormat, selectedQuality) },
+                        onClick = { onExport(selectedFormat, selectedQuality, selectedFps) },
                         colors = androidx.compose.material3.ButtonDefaults.buttonColors(
                             containerColor = UseSunoMVStudioTheme.colorScheme.primary,
                         ),

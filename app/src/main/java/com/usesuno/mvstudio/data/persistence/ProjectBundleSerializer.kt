@@ -76,11 +76,13 @@ class ProjectBundleSerializer(private val context: Context) {
     /**
      * Import project from .lyricmv file
      */
-    suspend fun importProject(inputFile: File): Result<Project> = withContext(Dispatchers.IO) {
+    suspend fun importProject(uri: Uri): Result<Project> = withContext(Dispatchers.IO) {
         try {
-            val zipInputStream = ZipInputStream(FileInputStream(inputFile))
+            val inputStream = context.contentResolver.openInputStream(uri)
+                ?: throw IllegalArgumentException("Unable to open project bundle")
+            val zipInputStream = ZipInputStream(inputStream)
             var project: Project? = null
-            val assets = mutableListOf<AssetEntity>()
+            val deferredAssets = mutableListOf<Pair<String, ByteArray>>()
 
             var entry: ZipEntry? = zipInputStream.nextEntry
             while (entry != null) {
@@ -96,28 +98,10 @@ class ProjectBundleSerializer(private val context: Context) {
 
                 when {
                     name == "project.json" -> {
-                        project = json.decodeFromString<Project>(String(bytes))
+                        project = json.decodeFromString<Project>(String(bytes, Charsets.UTF_8))
                     }
-                    name.startsWith("audio") -> {
-                        assets.add(AssetEntity(
-                            id = project?.audioId ?: java.util.UUID.randomUUID().toString(),
-                            projectId = project?.id ?: "",
-                            type = AssetType.AUDIO,
-                            mimeType = getMimeType(name),
-                            data = bytes,
-                            name = name,
-                        ))
-                    }
-                    name.startsWith("assets/") -> {
-                        val assetId = name.substringAfterLast("/").substringBeforeLast(".")
-                        assets.add(AssetEntity(
-                            id = assetId,
-                            projectId = project?.id ?: "",
-                            type = guessAssetType(name),
-                            mimeType = getMimeType(name),
-                            data = bytes,
-                            name = name,
-                        ))
+                    name.startsWith("audio.") || name.startsWith("assets/") -> {
+                        deferredAssets.add(name to bytes)
                     }
                 }
 
@@ -145,9 +129,21 @@ class ProjectBundleSerializer(private val context: Context) {
                 )
 
                 database.projectDao().insert(projectEntity)
-                if (assets.isNotEmpty()) {
-                    database.assetDao().insertAll(assets)
+                val assets = deferredAssets.mapNotNull { (name, bytes) ->
+                    val isAudioEntry = name.startsWith("audio.")
+                    val assetId = if (isAudioEntry) p.audioId else name.substringAfterLast("/").substringBeforeLast(".")
+                    assetId?.let {
+                        AssetEntity(
+                            id = it,
+                            projectId = p.id,
+                            type = if (isAudioEntry) AssetType.AUDIO else guessAssetType(name),
+                            mimeType = getMimeType(name),
+                            data = bytes,
+                            name = name,
+                        )
+                    }
                 }
+                if (assets.isNotEmpty()) database.assetDao().insertAll(assets)
 
                 Result.success(p)
             } ?: Result.failure(IllegalArgumentException("No project.json found in bundle"))

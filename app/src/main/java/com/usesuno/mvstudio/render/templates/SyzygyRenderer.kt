@@ -9,6 +9,7 @@ import com.usesuno.mvstudio.render.engine.Canvas2DRenderer
 import kotlin.math.sin
 import kotlin.math.cos
 import kotlin.math.PI
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
@@ -29,6 +30,8 @@ class SyzygyRenderer : Canvas2DRenderer(Template.SYZYGY) {
         var hue: Float,
         var orbitalSpeed: Float,
         var name: String,
+        var x: Float = 0f,
+        var y: Float = 0f,
     )
 
     data class OrbitPath(
@@ -39,8 +42,8 @@ class SyzygyRenderer : Canvas2DRenderer(Template.SYZYGY) {
     )
 
     override fun onInitialize() {
-        val centerX = bounds.centerX()
-        val centerY = bounds.centerY()
+        val centerX = bounds.centerX().toFloat()
+        val centerY = bounds.centerY().toFloat()
 
         // Create central "sun"
         planets.add(Planet(
@@ -55,16 +58,14 @@ class SyzygyRenderer : Canvas2DRenderer(Template.SYZYGY) {
         // Create orbiting planets
         val planetData = listOf(
             Planet(0f, 120f, 8f, 200f, 0.02f, "Mercury"),
-            Planet(PI/4f, 180f, 12f, 30f, 0.015f, "Venus"),
-            Planet(PI/2f, 250f, 15f, 220f, 0.01f, "Earth"),
-            Planet(3*PI/4f, 330f, 10f, 10f, 0.008f, "Mars"),
-            Planet(PI, 450f, 25f, 40f, 0.005f, "Jupiter"),
-            Planet(5*PI/4f, 550f, 20f, 30f, 0.003f, "Saturn"),
+            Planet(PI.toFloat() / 4f, 180f, 12f, 30f, 0.015f, "Venus"),
+            Planet(PI.toFloat() / 2f, 250f, 15f, 220f, 0.01f, "Earth"),
+            Planet(3f * PI.toFloat() / 4f, 330f, 10f, 10f, 0.008f, "Mars"),
+            Planet(PI.toFloat(), 450f, 25f, 40f, 0.005f, "Jupiter"),
+            Planet(5f * PI.toFloat() / 4f, 550f, 20f, 30f, 0.003f, "Saturn"),
         )
 
         for (p in planetData) {
-            p.centerX = centerX
-            p.centerY = centerY
             planets.add(p)
             orbits.add(OrbitPath(centerX, centerY, p.distance, p.hue))
         }
@@ -77,8 +78,8 @@ class SyzygyRenderer : Canvas2DRenderer(Template.SYZYGY) {
         val reactivity = project.audioReactivityConfig
         val bassInfluence = audioBass * reactivity.bassGain
 
-        val centerX = bounds.centerX()
-        val centerY = bounds.centerY()
+        val centerX = bounds.centerX().toFloat()
+        val centerY = bounds.centerY().toFloat()
 
         // Draw orbits
         for (orbit in orbits) {
@@ -143,8 +144,9 @@ class SyzygyRenderer : Canvas2DRenderer(Template.SYZYGY) {
                 val p1 = orbitingPlanets[i]
                 val p2 = orbitingPlanets[j]
 
-                val angleDiff = abs(p1.angle - p2.angle) % (2 * PI)
-                val aligned = angleDiff < 0.1 || angleDiff > 2 * PI - 0.1
+                val fullTurn = 2f * PI.toFloat()
+                val angleDiff = abs(p1.angle - p2.angle) % fullTurn
+                val aligned = angleDiff < 0.1f || angleDiff > fullTurn - 0.1f
 
                 if (aligned) {
                     alignmentPaint.strokeWidth = 2f

@@ -44,8 +44,8 @@ class PartitaRenderer : Canvas2DRenderer(Template.PARTITA) {
         val bassInfluence = audioBass * reactivity.bassGain
         val midInfluence = audioMid * reactivity.midGain
 
-        val centerX = bounds.centerX()
-        val centerY = bounds.centerY()
+        val centerX = bounds.centerX().toFloat()
+        val centerY = bounds.centerY().toFloat()
         val staffSpacing = 20f
         val staffTop = centerY - (staffLines - 1) * staffSpacing / 2
 
@@ -69,27 +69,26 @@ class PartitaRenderer : Canvas2DRenderer(Template.PARTITA) {
             note.velocity *= 0.98f
 
             val alpha = (min(1f, note.life) * 255).toInt()
-            val color = android.graphics.Color.HSVToColor(alpha, floatArrayOf(note.hue, 0.8f, 1f))
-            paint.color = color
+            val noteColor = android.graphics.Color.HSVToColor(alpha, floatArrayOf(note.hue, 0.8f, 1f))
+            paint.color = noteColor
 
             // Draw note head
             canvas.drawCircle(note.x, note.y, note.size, paint)
 
             // Draw stem
             val stemPaint = Paint().apply {
-                color = paint.color
+                color = noteColor
                 strokeWidth = 2f
                 isAntiAlias = true
                 style = Paint.Style.STROKE
             }
             val stemHeight = -40f
             canvas.drawLine(note.x + note.size, note.y, note.x + note.size, note.y + stemHeight, stemPaint)
-
             // Draw flag for eighth notes
             if (note.size < 10) {
                 val flagPath = android.graphics.Path()
-                flagPath.moveTo(note.x + note.size, note.y + stemHeight)
-                flagPath.quadTo(note.x + note.size + 15, note.y + stemHeight - 10, note.x + note.size + 20, note.y + stemHeight - 5)
+                flagPath.moveTo(note.x + note.size, note.y + stemHeight.toFloat())
+                flagPath.quadTo(note.x + note.size + 15f, note.y + stemHeight.toFloat() - 10f, note.x + note.size + 20f, note.y + stemHeight.toFloat() - 5f)
                 canvas.drawPath(flagPath, stemPaint)
             }
         }

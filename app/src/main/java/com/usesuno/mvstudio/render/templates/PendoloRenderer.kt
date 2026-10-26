@@ -61,7 +61,7 @@ class PendoloRenderer : Canvas2DRenderer(Template.PENDOLO) {
         val reactivity = project.audioReactivityConfig
         val bassInfluence = audioBass * reactivity.bassGain
 
-        val centerX = bounds.centerX()
+        val centerX = bounds.centerX().toFloat()
         val topY = 100f
         val dt = 1f / 30f
         val gravity = 9.8f * 50f // Scaled for pixels

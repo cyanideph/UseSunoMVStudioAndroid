@@ -33,8 +33,8 @@ class TiltRenderer : Canvas2DRenderer(Template.TILT) {
         rotationY += (0.01 + bassInfluence * 0.05) * project.templateTuning.speed
         rotationX += (0.005 + audioPower * 0.02) * project.templateTuning.speed
 
-        val centerX = bounds.centerX()
-        val centerY = bounds.centerY()
+        val centerX = bounds.centerX().toFloat()
+        val centerY = bounds.centerY().toFloat()
 
         // Draw background grid
         drawGrid(canvas, centerX, centerY, rotationX, rotationY)
