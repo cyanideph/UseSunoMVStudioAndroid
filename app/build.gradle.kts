@@ -56,12 +56,6 @@ android {
         compose = true
         viewBinding = true
     }
-
-    testOptions {
-        unitTests {
-            includeAndroidResources = true
-        }
-    }
 }
 
 dependencies {
