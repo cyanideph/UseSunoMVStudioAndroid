@@ -3,6 +3,7 @@ package com.usesuno.mvstudio.domain.model
 import android.os.Parcel
 import android.os.Parcelable
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Json
 
 /**
  * Core project model matching UseSunoMVStudio's domain/model.ts
@@ -294,7 +295,10 @@ data class TemplateTuning(
         colorShift = parcel.readFloat(),
         rotation = parcel.readFloat(),
         scale = parcel.readFloat(),
-        customParams = parcel.readHashMap(String::class.java.classLoader, String::class.java, Float::class.java) as Map<String, Float>,
+        customParams = {
+            val json = parcel.readString()
+            if (json.isNullOrEmpty()) emptyMap() else Json.decodeFromString(json)
+        }(),
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -304,7 +308,7 @@ data class TemplateTuning(
         parcel.writeFloat(colorShift)
         parcel.writeFloat(rotation)
         parcel.writeFloat(scale)
-        parcel.writeMap(customParams)
+        parcel.writeString(Json.encodeToString(customParams))
     }
 
     override fun describeContents(): Int = 0
@@ -341,7 +345,10 @@ data class BackgroundConfig(
         offsetX = parcel.readFloat(),
         offsetY = parcel.readFloat(),
         animationSpeed = parcel.readFloat(),
-        customParams = parcel.readHashMap(String::class.java.classLoader, String::class.java, Float::class.java) as Map<String, Float>,
+        customParams = {
+            val json = parcel.readString()
+            if (json.isNullOrEmpty()) emptyMap() else Json.decodeFromString(json)
+        }(),
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -354,7 +361,7 @@ data class BackgroundConfig(
         parcel.writeFloat(offsetX)
         parcel.writeFloat(offsetY)
         parcel.writeFloat(animationSpeed)
-        parcel.writeMap(customParams)
+        parcel.writeString(Json.encodeToString(customParams))
     }
 
     override fun describeContents(): Int = 0
