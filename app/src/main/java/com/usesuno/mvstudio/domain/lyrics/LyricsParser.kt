@@ -223,9 +223,7 @@ object LyricsParser {
         for (i in 0 until lines.size - 1) {
             val current = lines[i]
             val next = lines[i + 1]
-            if (current.end > next.start) {
-                lines[i] = current.copy(end = next.start)
-            }
+            lines[i] = current.copy(end = next.start)
         }
         // Last line gets reasonable duration
         val last = lines.lastOrNull()
