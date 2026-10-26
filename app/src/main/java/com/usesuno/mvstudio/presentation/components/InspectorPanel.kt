@@ -56,106 +56,104 @@ fun InspectorPanel(
                 .fillMaxSize()
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalAlignment = Alignment.Start,
         ) {
-            // Template Section
-            InspectorSection(
-                title = "Template",
-                expanded = "template" in expandedSections,
-                onToggle = { if ("template" in expandedSections) expandedSections -= "template" else expandedSections += "template" },
-            ) {
-                TemplateSelector(
-                    selectedTemplate = project.template,
-                    onTemplateChange = { template ->
-                        onProjectChange(project.copy(template = template))
-                    },
-                )
+            // All inspector sections with consistent card styling
+            Card(elevation = 2.dp, colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)) {
+                InspectorSection(
+                    title = "Template",
+                    expanded = "template" in expandedSections,
+                    onToggle = { if ("template" in expandedSections) expandedSections -= "template" else expandedSections += "template" },
+                ) {
+                    TemplateSelector(
+                        selectedTemplate = project.template,
+                        onTemplateChange = { template ->
+                            onProjectChange(project.copy(template = template))
+                        },
+                    )
 
-                TemplateTuningControls(
-                    tuning = project.templateTuning,
-                    onTuningChange = { tuning ->
-                        onProjectChange(project.copy(templateTuning = tuning))
-                    },
-                )
-            }
+                    TemplateTuningControls(
+                        tuning = project.templateTuning,
+                        onTuningChange = { tuning ->
+                            onProjectChange(project.copy(templateTuning = tuning))
+                        },
+                    )
+                }
 
-            // Background Section
-            InspectorSection(
-                title = "Background",
-                expanded = "background" in expandedSections,
-                onToggle = { if ("background" in expandedSections) expandedSections -= "background" else expandedSections += "background" },
-            ) {
-                BackgroundSelector(
-                    background = project.background,
-                    config = project.backgroundConfig,
-                    onBackgroundChange = { bg ->
-                        onProjectChange(project.copy(background = bg))
-                    },
-                    onConfigChange = { config ->
-                        onProjectChange(project.copy(backgroundConfig = config))
-                    },
-                )
-            }
+                InspectorSection(
+                    title = "Background",
+                    expanded = "background" in expandedSections,
+                    onToggle = { if ("background" in expandedSections) expandedSections -= "background" else expandedSections += "background" },
+                ) {
+                    BackgroundSelector(
+                        background = project.background,
+                        config = project.backgroundConfig,
+                        onBackgroundChange = { bg ->
+                            onProjectChange(project.copy(background = bg))
+                        },
+                        onConfigChange = { config ->
+                            onProjectChange(project.copy(backgroundConfig = config))
+                        },
+                    )
+                }
 
-            // Typography Section
-            InspectorSection(
-                title = "Typography",
-                expanded = "typography" in expandedSections,
-                onToggle = { if ("typography" in expandedSections) expandedSections -= "typography" else expandedSections += "typography" },
-            ) {
-                TypographyControls(
-                    project = project,
-                    onProjectChange = onProjectChange,
-                )
-            }
+                InspectorSection(
+                    title = "Typography",
+                    expanded = "typography" in expandedSections,
+                    onToggle = { if ("typography" in expandedSections) expandedSections -= "typography" else expandedSections += "typography" },
+                ) {
+                    TypographyControls(
+                        project = project,
+                        onProjectChange = onProjectChange,
+                    )
+                }
 
-            // Intro Section
-            InspectorSection(
-                title = "Intro",
-                expanded = "intro" in expandedSections,
-                onToggle = { if ("intro" in expandedSections) expandedSections -= "intro" else expandedSections += "intro" },
-            ) {
-                IntroControls(
-                    enabled = project.introEnabled,
-                    duration = project.introDuration,
-                    style = project.introStyle,
-                    onEnabledChange = { onProjectChange(project.copy(introEnabled = it)) },
-                    onDurationChange = { onProjectChange(project.copy(introDuration = it)) },
-                    onStyleChange = { onProjectChange(project.copy(introStyle = it)) },
-                )
-            }
+                InspectorSection(
+                    title = "Intro",
+                    expanded = "intro" in expandedSections,
+                    onToggle = { if ("intro" in expandedSections) expandedSections -= "intro" else expandedSections += "intro" },
+                ) {
+                    IntroControls(
+                        enabled = project.introEnabled,
+                        duration = project.introDuration,
+                        style = project.introStyle,
+                        onEnabledChange = { onProjectChange(project.copy(introEnabled = it)) },
+                        onDurationChange = { onProjectChange(project.copy(introDuration = it)) },
+                        onStyleChange = { onProjectChange(project.copy(introStyle = it)) },
+                    )
+                }
 
-            // Audio Reactivity Section
-            InspectorSection(
-                title = "Audio Reactivity",
-                expanded = "audio" in expandedSections,
-                onToggle = { if ("audio" in expandedSections) expandedSections -= "audio" else expandedSections += "audio" },
-            ) {
-                AudioReactivityControls(
-                    enabled = project.audioReactivityEnabled,
-                    config = project.audioReactivityConfig,
-                    onEnabledChange = { onProjectChange(project.copy(audioReactivityEnabled = it)) },
-                    onConfigChange = { onProjectChange(project.copy(audioReactivityConfig = it)) },
-                )
-            }
+                InspectorSection(
+                    title = "Audio Reactivity",
+                    expanded = "audio" in expandedSections,
+                    onToggle = { if ("audio" in expandedSections) expandedSections -= "audio" else expandedSections += "audio" },
+                ) {
+                    AudioReactivityControls(
+                        enabled = project.audioReactivityEnabled,
+                        config = project.audioReactivityConfig,
+                        onEnabledChange = { onProjectChange(project.copy(audioReactivityEnabled = it)) },
+                        onConfigChange = { onProjectChange(project.copy(audioReactivityConfig = it)) },
+                    )
+                }
 
-            // Export Section
-            InspectorSection(
-                title = "Export",
-                expanded = "export" in expandedSections,
-                onToggle = { if ("export" in expandedSections) expandedSections -= "export" else expandedSections += "export" },
-            ) {
-                ExportSettingsControls(
-                    format = project.exportFormat,
-                    fps = project.exportFps,
-                    quality = project.exportQuality,
-                    onFormatChange = { onProjectChange(project.copy(exportFormat = it)) },
-                    onFpsChange = { onProjectChange(project.copy(exportFps = it)) },
-                    onQualityChange = { onProjectChange(project.copy(exportQuality = it)) },
-                )
+                InspectorSection(
+                    title = "Export",
+                    expanded = "export" in expandedSections,
+                    onToggle = { if ("export" in expandedSections) expandedSections -= "export" else expandedSections += "export" },
+                ) {
+                    ExportSettingsControls(
+                        format = project.exportFormat,
+                        fps = project.exportFps,
+                        quality = project.exportQuality,
+                        onFormatChange = { onProjectChange(project.copy(exportFormat = it)) },
+                        onFpsChange = { onProjectChange(project.copy(exportFps = it)) },
+                        onQualityChange = { onProjectChange(project.copy(exportQuality = it)) },
+                    )
+                }
             }
         }
     }
-}
+
 
 @Composable
 fun InspectorSection(
@@ -231,17 +229,35 @@ fun TemplateTuningControls(
 @Composable
 fun SliderRow(label: String, value: Float, min: Float, max: Float, onChange: (Float) -> Unit) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(label, modifier = Modifier.width(100.dp))
+        // Label with icon prefix
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start,
+        ) {
+            Text(label, modifier = Modifier.width(100.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Icon("ic_tune", contentDescription = "Slider control", contentColor = MaterialTheme.colorScheme.primary)
+        }
+
+        Spacer(modifier = Modifier.width(4.dp))
+
         Slider(
             value = value,
             onValueChange = onChange,
             valueRange = min..max,
             modifier = Modifier.weight(1f),
+            colors = SliderDefaults.colors(
+                thumbColor = MaterialTheme.colorScheme.primary,
+                activeTrackColor = MaterialTheme.colorScheme.primary.withAlpha(51), // 20% opacity
+                inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant,
+            ),
         )
-        Text(String.format("%.2f", value), modifier = Modifier.width(50.dp))
+
+        // Value display
+        Text(String.format("%.2f", value), modifier = Modifier.width(50.dp), alignment = Alignment.End, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
