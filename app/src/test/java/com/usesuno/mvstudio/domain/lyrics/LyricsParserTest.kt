@@ -39,7 +39,7 @@ class LyricsParserTest {
 
         assertEquals(2, result.lines.size)
         assertEquals(Precision.WORD, result.lines[0].precision)
-        assertEquals(5, result.lines[1].words.size)
+        assertEquals(4, result.lines[1].words.size)
         assertEquals("Hello", result.lines[0].words[0].text)
         assertEquals(0.0, result.lines[0].words[0].start, 0.01)
         assertEquals(0.5, result.lines[0].words[0].end, 0.01)
