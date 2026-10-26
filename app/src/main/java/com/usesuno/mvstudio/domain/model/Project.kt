@@ -3,7 +3,7 @@ package com.usesuno.mvstudio.domain.model
 import android.os.Parcel
 import android.os.Parcelable
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Json
+import kotlinx.serialization.json.Json
 
 /**
  * Core project model matching UseSunoMVStudio's domain/model.ts
@@ -297,7 +297,7 @@ data class TemplateTuning(
         scale = parcel.readFloat(),
         customParams = {
             val json = parcel.readString()
-            if (json.isNullOrEmpty()) emptyMap() else Json.decodeFromString(json)
+            if (json.isNullOrEmpty()) emptyMap() else Json.decodeFromString<Map<String, Float>>(json)
         }(),
     )
 
@@ -308,7 +308,7 @@ data class TemplateTuning(
         parcel.writeFloat(colorShift)
         parcel.writeFloat(rotation)
         parcel.writeFloat(scale)
-        parcel.writeString(Json.encodeToString(customParams))
+        parcel.writeString(Json.encodeToString<Map<String, Float>>(customParams))
     }
 
     override fun describeContents(): Int = 0
@@ -347,7 +347,7 @@ data class BackgroundConfig(
         animationSpeed = parcel.readFloat(),
         customParams = {
             val json = parcel.readString()
-            if (json.isNullOrEmpty()) emptyMap() else Json.decodeFromString(json)
+            if (json.isNullOrEmpty()) emptyMap() else Json.decodeFromString<Map<String, Float>>(json)
         }(),
     )
 
@@ -361,7 +361,7 @@ data class BackgroundConfig(
         parcel.writeFloat(offsetX)
         parcel.writeFloat(offsetY)
         parcel.writeFloat(animationSpeed)
-        parcel.writeString(Json.encodeToString(customParams))
+        parcel.writeString(Json.encodeToString<Map<String, Float>>(customParams))
     }
 
     override fun describeContents(): Int = 0
