@@ -88,20 +88,31 @@ fun TimestampScreen(
 
     UseSunoMVStudioTheme {
         Column(modifier = Modifier.fillMaxSize()) {
+            // Enhanced Top App Bar with better styling
             TopAppBar(
-                title = { Text("Word Timing Editor", fontSize = 18.sp) },
+                title = { Text("Word Timing Editor", fontSize = 20.sp, fontWeight = MaterialTheme.typography.headline6?.fontWeight) },
                 modifier = Modifier.fillMaxWidth(),
                 navigationIcon = {
                     IconButton(onClick = onDone) {
-                        Icon(painterResource("ic_check"), contentDescription = "Done")
+                        Icon(painterResource("ic_check"), contentDescription = "Done", contentColor = MaterialTheme.colorScheme.onSurface)
                     }
                 },
                 actions = {
+                    // Mode toggle with improved icon
                     IconButton(onClick = { showWordTiming = !showWordTiming }) {
-                        Icon(painterResource(if (showWordTiming) "ic_text_fields" else "ic_format_list_numbered"), contentDescription = "Toggle Word/Line")
+                        Icon(
+                            painterResource(if (showWordTiming) "ic_text_fields" else "ic_format_list_numbered"),
+                            contentDescription = "Toggle Word/Line",
+                            contentColor = MaterialTheme.colorScheme.onSurface
+                        )
                     }
+                    // Auto-segment button
                     IconButton(onClick = { /* Auto-segment */ }) {
-                        Icon(painterResource("ic_auto_awesome"), contentDescription = "Auto Segment")
+                        Icon(painterResource("ic_auto_awesome"), contentDescription = "Auto Segment", contentColor = MaterialTheme.colorScheme.onSurface)
+                    }
+                    // Settings button
+                    IconButton(onClick = { /* Open settings */ }) {
+                        Icon(painterResource("ic_settings"), contentDescription = "Settings", contentColor = MaterialTheme.colorScheme.onSurface)
                     }
                 }
             )
@@ -111,15 +122,16 @@ fun TimestampScreen(
                     .fillMaxSize()
                     .weight(1f),
             ) {
-                // Left: Waveform + Timeline
+                // Left panel - Waveform + Transport controls
                 Box(
                     modifier = Modifier
                         .weight(1f, true)
                         .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.surfaceContainerHighest)
                         .padding(16.dp),
                 ) {
                     Column(modifier = Modifier.fillMaxSize()) {
-                        // Waveform
+                        // Waveform section
                         WaveformView(
                             audioUri = audioUri,
                             currentTime = currentTime,
@@ -127,12 +139,18 @@ fun TimestampScreen(
                             lines = project.lines,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(200.dp),
+                                .height(180.dp),
                         )
 
-                        // Global offset slider
-                        Column(modifier = Modifier.fillMaxWidth().padding(top = 16.dp)) {
-                            Text("Global Offset: ${String.format("%.2f", globalOffset)}s", fontSize = 14.sp)
+                        // Global offset and timing info
+                        Column(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                            ) {
+                                Text("Global Offset: ${String.format("%.2f", globalOffset)}s", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text("${formatTime(currentTime)} / ${formatTime(duration)}", fontSize = 12.sp)
+                            }
                             Slider(
                                 value = (globalOffset + 10).toFloat(), // -10 to +10
                                 onValueChange = { v ->
@@ -140,31 +158,45 @@ fun TimestampScreen(
                                     onProjectChange(project.copy(globalOffset = (v - 10).toDouble()))
                                 },
                                 valueRange = 0f..20f,
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
                             )
                         }
                     }
                 }
 
-                // Right: Lyric Editor
+                // Right: Lyric Editor area
                 Card(
                     modifier = Modifier
-                        .width(400.dp)
+                        .width(420.dp)
                         .fillMaxSize()
                         .padding(16.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surface,
                     ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                    elevation = 4.dp,
                 ) {
                     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-                        Text(if (showWordTiming) "Word Timing" else "Line Timing", fontSize = 16.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                        // Mode selector
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            Text(if (showWordTiming) "Word Timing" else "Line Timing", fontSize = 16.sp, fontWeight = MaterialTheme.typography.headline6?.fontWeight ?? FontWeight.Normal)
+                            androidx.compose.material3.Switch(
+                                checked = showWordTiming,
+                                onCheckedChange = { showWordTiming = it },
+                                colors = SwitchDefaults.colors(
+                                    thumbColor = MaterialTheme.colorScheme.primary,
+                                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                                ),
+                            )
+                        }
 
+                        // Lyric lines list
                         androidx.compose.foundation.layout.Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(top = 16.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxSize().padding(top = 16.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp),
                         ) {
                             project.lines.forEachIndexed { lineIndex, line ->
                                 LyricLineItem(
@@ -193,43 +225,61 @@ fun TimestampScreen(
                 }
             }
 
-            // Bottom: Transport controls
+            // Bottom: Transport controls with improved styling
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(100.dp)
+                    .height(80.dp)
                     .padding(16.dp)
-                    .background(Color.Black),
+                    .background(MaterialTheme.colorScheme.surface),
                 contentAlignment = Alignment.Center,
             ) {
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(24.dp),
+                    horizontalArrangement = Arrangement.spaceEvenly,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    IconButton(onClick = { mediaPlayer.seekTo(0); currentTime = 0.0 }) {
-                        Icon(painterResource("ic_replay_10"), contentDescription = "Restart")
-                    }
-                    IconButton(onClick = { isPlaying = !isPlaying }) {
-                        Icon(painterResource(if (isPlaying) "ic_pause" else "ic_play_arrow"), contentDescription = if (isPlaying) "Pause" else "Play", tint = Color.White)
-                    }
-                    IconButton(onClick = { mediaPlayer.seekTo((duration * 1000).toInt()); currentTime = duration }) {
-                        Icon(painterResource("ic_forward_10"), contentDescription = "End")
+                    // Rewind 10s
+    IconButton(onClick = { mediaPlayer.seekTo(0); currentTime = 0.0 }) {
+                        Icon("ic_replay_10", contentDescription = "Restart", contentColor = MaterialTheme.colorScheme.onSurface)
                     }
 
-                    Text("${formatTime(currentTime)} / ${formatTime(duration)}", fontSize = 14.sp, color = Color.White)
+    // Play/Pause with nice animation
+    IconButton(onClick = { isPlaying = !isPlaying }) {
+        Icon(
+            painterResource(if (isPlaying) "ic_pause" else "ic_play_arrow"),
+            contentDescription = if (isPlaying) "Pause" else "Play",
+            contentColor = if (isPlaying) MaterialTheme.colorScheme.primary : MaterialTheme.colorScheme.onSurface
+        )
+    }
 
-                    // Tap timing button
-                    Button(
-                        onClick = { setCurrentTimeForSelected() },
-                        modifier = Modifier.size(80.dp, 80.dp),
-                        colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = Color.Red),
-                    ) {
-                        Text("TAP", fontSize = 18.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
-                    }
+    // Forward 10s
+    IconButton(onClick = { mediaPlayer.seekTo((duration * 1000).toInt()); currentTime = duration }) {
+        Icon("ic_forward_10", contentDescription = "End", contentColor = MaterialTheme.colorScheme.onSurface)
+    }
+
+    // Time display
+    Text(
+        "${formatTime(currentTime)} / ${formatTime(duration)}",
+        fontSize = 14.sp,
+        color = MaterialTheme.colorScheme.onSurface
+    )
+
+    // Tap timing - prominent button
+    Button(
+        onClick = { setCurrentTimeForSelected() },
+        modifier = Modifier.size(64.dp, 64.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+        ),
+    ) {
+        Text("TAP", fontSize = 16.sp, fontWeight = MaterialTheme.typography.button?.fontWeight ?: FontWeight.Bold)
+    }
                 }
             }
         }
     }
+}
+}
 }
 
 @Composable

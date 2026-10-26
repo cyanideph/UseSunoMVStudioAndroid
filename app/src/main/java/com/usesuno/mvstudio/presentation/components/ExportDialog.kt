@@ -49,107 +49,113 @@ fun ExportDialog(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .width(400.dp)
+                .width(420.dp)
                 .padding(24.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+            elevation = 8.dp,
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+            ),
         ) {
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(24.dp),
             ) {
-                // Title
+                // Title bar with close button
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                    horizontalArrangement = Arrangement.Between,
                 ) {
                     Text("Export Video", fontSize = 20.sp, fontWeight = FontWeight.Bold)
                     IconButton(onClick = onDismiss) {
-                        Icon(painterResource("ic_close"), contentDescription = "Close")
+                        Icon(
+                            painterResource("ic_close"),
+                            contentDescription = "Close",
+                            contentColor = MaterialTheme.colorScheme.onSurface
+                        )
                     }
                 }
 
-                // Format selection
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                // Form card inside export dialog
+                Card(
+                    elevation = 2.dp,
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    ),
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp).padding(bottom = 8.dp),
                 ) {
-                    Text("Format", fontSize = 14.sp, fontWeight = FontWeight.Medium)
-                    Row(
+                    Column(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        ExportFormat.values().forEach { format ->
-                            androidx.compose.material3.FilterChip(
-                                selected = selectedFormat == format,
-                                onClick = { selectedFormat = format },
-                                label = { Text(format.name) },
-                                modifier = Modifier.weight(1f),
+                        // Format selection
+                        Text("Format", fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            ExportFormat.values().forEach { format ->
+                                androidx.compose.material3.FilterChip(
+                                    selected = selectedFormat == format,
+                                    onClick = { selectedFormat = format },
+                                    label = { Text(format.name) },
+                                    modifier = Modifier.weight(1f),
+                                )
+                            }
+                        }
+
+                        // Quality selection
+                        Text("Quality", fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            ExportQuality.values().forEach { quality ->
+                                androidx.compose.material3.FilterChip(
+                                    selected = selectedQuality == quality,
+                                    onClick = { selectedQuality = quality },
+                                    label = { Text(quality.name) },
+                                    modifier = Modifier.weight(1f),
+                                )
+                            }
+                        }
+
+                        // FPS
+                        Text("Frame Rate", fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                        Slider(
+                            value = selectedFps.toFloat(),
+                            onValueChange = { selectedFps = it.toInt() },
+                            valueRange = 15f..60f,
+                            steps = (60 - 15) / 5,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+
+                        // Include audio
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            Text("Include Audio", fontSize = 14.sp)
+                            Switch(
+                                checked = includeAudio,
+                                onCheckedChange = { includeAudio = it },
                             )
                         }
+
+                        // Resolution info
+                        Text(
+                            "Resolution: ${project.resolution.name} (${project.aspectRatio.name})",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+
+                        // Estimated time
+                        Text(
+                            "Estimated export time: ~${estimateExportTime(project, selectedFps)}",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                 }
-
-                // Quality selection
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    Text("Quality", fontSize = 14.sp, fontWeight = FontWeight.Medium)
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        ExportQuality.values().forEach { quality ->
-                            androidx.compose.material3.FilterChip(
-                                selected = selectedQuality == quality,
-                                onClick = { selectedQuality = quality },
-                                label = { Text(quality.name) },
-                                modifier = Modifier.weight(1f),
-                            )
-                        }
-                    }
-                }
-
-                // FPS
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    Text("Frame Rate: ${selectedFps} fps", fontSize = 14.sp, fontWeight = FontWeight.Medium)
-                    Slider(
-                        value = selectedFps.toFloat(),
-                        onValueChange = { selectedFps = it.toInt() },
-                        valueRange = 15f..60f,
-                        steps = (60 - 15) / 5,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
-
-                // Include audio
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Text("Include Audio", fontSize = 14.sp)
-                    Switch(
-                        checked = includeAudio,
-                        onCheckedChange = { includeAudio = it },
-                    )
-                }
-
-                // Resolution info
-                Text(
-                    "Resolution: ${project.resolution.name} (${project.aspectRatio.name})",
-                    fontSize = 12.sp,
-                    color = UseSunoMVStudioTheme.colorScheme.onSurfaceVariant,
-                )
-
-                // Estimated time
-                Text(
-                    "Estimated export time: ~${estimateExportTime(project, selectedFps)}",
-                    fontSize = 12.sp,
-                    color = UseSunoMVStudioTheme.colorScheme.onSurfaceVariant,
-                )
 
                 // Action buttons
                 Row(
@@ -162,8 +168,9 @@ fun ExportDialog(
                     androidx.compose.material3.Button(
                         onClick = { onExport(selectedFormat, selectedQuality, selectedFps) },
                         colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                            containerColor = UseSunoMVStudioTheme.colorScheme.primary,
+                            containerColor = MaterialTheme.colorScheme.primary,
                         ),
+                        modifier = Modifier.padding(end = 4.dp),
                     ) {
                         Text("Start Export")
                     }

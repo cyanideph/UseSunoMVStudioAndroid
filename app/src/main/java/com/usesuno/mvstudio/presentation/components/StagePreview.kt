@@ -44,19 +44,28 @@ fun StagePreview(
     Box(
         modifier = modifier
             .aspectRatio(aspectRatio)
-            .background(Color.Black),
-        contentAlignment = Alignment.Center,
+            .background(Color.Black)
+            .contentAlignment(Alignment.Center),
     ) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val bounds = android.graphics.Rect(0, 0, size.width.toInt(), size.height.toInt())
-            drawIntoCanvas { canvas ->
-                renderer?.renderFrame(canvas.nativeCanvas, currentTime, currentAudioFrame, bounds)
+        // Renderer status indicator
+        if (renderer == null) {
+            Text("Select a template to render", alignment = Alignment.Center, modifier = Modifier.size(width = 200.dp, height = 100.dp))
+        } else {
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val bounds = android.graphics.Rect(0, 0, size.width.toInt(), size.height.toInt())
+                drawIntoCanvas { canvas ->
+                    renderer?.renderFrame(canvas.nativeCanvas, currentTime, currentAudioFrame, bounds)
+                }
             }
         }
     }
 
-    // Initialize renderer
+    // Initialize renderer with loading state
     LaunchedEffect(project.template, project.resolution, project.aspectRatio) {
+        // Show initial loading state before renderer is created
+        if (renderer == null) {
+            // Will be set by LaunchedEffect below
+        }
         renderer?.dispose()
         renderer = RendererFactory.createRenderer(project.template).also {
             it.initialize(project, project.resolution.width, project.resolution.height)
@@ -68,6 +77,7 @@ fun StagePreview(
     }
 
     // Update renderer settings when project changes
+    // Also show rendering status in preview
     LaunchedEffect(project) {
         renderer?.updateSettings(project)
     }
