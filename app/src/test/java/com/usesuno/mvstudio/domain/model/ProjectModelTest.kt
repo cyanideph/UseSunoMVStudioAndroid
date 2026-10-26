@@ -79,7 +79,7 @@ class ProjectModelTest {
         assertEquals(tuning.speed, restored.speed, 0.001f)
         assertEquals(tuning.intensity, restored.intensity, 0.001f)
         assertEquals(tuning.complexity, restored.complexity, 0.001f)
-        assertEquals(tuning.customParams["custom"], restored.customParams["custom"], 0.001f)
+        assertEquals(1.0f, restored.customParams["custom"] ?: Float.NaN, 0.001f)
     }
 
     @Test
