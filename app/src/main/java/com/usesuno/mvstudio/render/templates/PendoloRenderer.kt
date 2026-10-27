@@ -22,6 +22,29 @@ class PendoloRenderer : Canvas2DRenderer(Template.PENDOLO) {
     private val paint = Paint().apply { isAntiAlias = true; style = Paint.Style.FILL }
     private val linePaint = Paint().apply { isAntiAlias = true; style = Paint.Style.STROKE; strokeWidth = 2f }
 
+    override val foliaStyle = object : com.usesuno.mvstudio.render.engine.FoliaLyricStyle {
+        override fun transformLine(
+            canvas: Canvas,
+            line: LyricLine,
+            lineIndex: Int,
+            distFromCenter: Float,
+            lineX: Float,
+            lineY: Float,
+            scale: Float,
+            alpha: Float,
+            audioFrame: AudioFrame?,
+            drawContent: (Canvas) -> Unit,
+        ) {
+            val bass = audioFrame?.bass ?: 0f
+            val pendulumSway = kotlin.math.sin(animationTime * 1.5 + distFromCenter * 0.8) * (6f + bass * 10f)
+            canvas.save()
+            canvas.translate(lineX + pendulumSway.toFloat(), lineY)
+            canvas.scale(scale, scale)
+            drawContent(canvas)
+            canvas.restore()
+        }
+    }
+
     data class Pendulum(
         var angle: Float,
         var angularVelocity: Float,

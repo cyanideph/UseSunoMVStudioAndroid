@@ -21,6 +21,32 @@ class KyotoRenderer : Canvas2DRenderer(Template.KYOTO) {
     private val brushStrokes = mutableListOf<InkStroke>()
     private val paint = Paint().apply { isAntiAlias = true; style = Paint.Style.STROKE }
     private var timeOffset = 0.0
+    private val inkGlowPaint = Paint().apply { isAntiAlias = true }
+
+    override val foliaStyle = object : com.usesuno.mvstudio.render.engine.FoliaLyricStyle {
+        override fun drawWord(
+            canvas: Canvas,
+            word: LyricWord,
+            wordX: Float,
+            baselineY: Float,
+            wordWidth: Float,
+            isActive: Boolean,
+            isSpoken: Boolean,
+            wordProgress: Float,
+            lineAlpha: Float,
+            textPaint: Paint,
+            audioFrame: AudioFrame?,
+        ): Boolean {
+            if (isActive) {
+                // Soft Sumi-e calligraphic ink bleed halo around active word
+                inkGlowPaint.set(textPaint)
+                inkGlowPaint.alpha = (90 * lineAlpha).toInt().coerceIn(0, 255)
+                inkGlowPaint.setShadowLayer(20f, 0f, 0f, 0xFFE8E0D0.toInt())
+                canvas.drawText(word.text, wordX, baselineY, inkGlowPaint)
+            }
+            return false
+        }
+    }
 
     data class InkStroke(
         var points: MutableList<Point> = mutableListOf(),

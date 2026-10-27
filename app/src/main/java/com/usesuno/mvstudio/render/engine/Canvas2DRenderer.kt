@@ -107,6 +107,11 @@ abstract class Canvas2DRenderer(
 
     protected open fun onTemplateChanged(oldTemplate: Template, newTemplate: Template) {}
 
+    // Folia Lyric Engine
+    protected val foliaEngine: FoliaLyricEngine = FoliaLyricEngine()
+    protected open val foliaStyle: FoliaLyricStyle = FoliaLyricStyle.DEFAULT
+    protected open val handlesOwnLyrics: Boolean = false
+
     override fun renderFrame(
         canvas: Canvas,
         time: Double,
@@ -129,8 +134,8 @@ abstract class Canvas2DRenderer(
         // Render template-specific content
         renderTemplate(canvas, time, audioFrame)
 
-        // Render lyrics
-        renderLyrics(canvas, time)
+        // Render lyrics via Folia engine
+        renderLyrics(canvas, time, audioFrame)
     }
 
     protected abstract fun renderTemplate(
@@ -139,86 +144,24 @@ abstract class Canvas2DRenderer(
         audioFrame: AudioFrame?,
     )
 
-    protected open fun renderLyrics(canvas: Canvas, time: Double) {
-        val visibleLines = project.lines.filter { it.start <= time && it.end >= time }
-        if (visibleLines.isEmpty()) return
-
-        val centerX = bounds.centerX().toFloat()
-        val centerY = bounds.centerY().toFloat()
-        val lineHeight = textPaint.textSize * project.lineHeight
-
-        for ((index, line) in visibleLines.withIndex()) {
-            val y = centerY + (index - visibleLines.size / 2f) * lineHeight
-
-            // Apply intro animation
-            val alpha = if (project.introEnabled && introProgress < 1f) {
-                applyIntroAnimation(introProgress, index, visibleLines.size)
-            } else 1f
-
-            textPaint.alpha = (255 * alpha).toInt()
-
-            // Draw line text
-            canvas.drawText(line.text, centerX, y, textPaint)
-
-            // Draw word highlights if word-level precision
-            if (line.precision == Precision.WORD && line.words.isNotEmpty()) {
-                renderWordHighlights(canvas, line, time, centerX, y)
-            }
-        }
-    }
-
-    protected open fun applyIntroAnimation(progress: Float, lineIndex: Int, totalLines: Int): Float {
-        return when (project.introStyle) {
-            IntroStyle.FADE -> progress
-            IntroStyle.SLIDE_UP -> {
-                val delay = lineIndex * 0.1f
-                max(0f, min(1f, (progress - delay) / (1f - delay)))
-            }
-            IntroStyle.SLIDE_DOWN -> {
-                val delay = (totalLines - lineIndex - 1) * 0.1f
-                max(0f, min(1f, (progress - delay) / (1f - delay)))
-            }
-            IntroStyle.ZOOM -> progress * progress
-            IntroStyle.TYPEWRITER -> progress
-            else -> 1f
-        }
-    }
-
-    protected open fun renderWordHighlights(
-        canvas: Canvas,
-        line: LyricLine,
-        time: Double,
-        centerX: Float,
-        centerY: Float,
-    ) {
-        // Default: highlight current word
-        val currentWord = line.words.find { it.start <= time && it.end >= time }
-        currentWord?.let { word ->
-            // Measure text up to this word
-            val beforeText = line.words
-                .takeWhile { it != word }
-                .joinToString(" ") { it.text }
-            val beforeWidth = if (beforeText.isEmpty()) 0f else textPaint.measureText(beforeText + " ")
-
-            val wordWidth = textPaint.measureText(word.text)
-
-            // Draw highlight background
-            val highlightPaint = Paint().apply {
-                color = android.graphics.Color.parseColor("#FFFF0080") // Semi-transparent yellow
-            }
-            canvas.drawRect(
-                centerX - textPaint.measureText(line.text) / 2 + beforeWidth,
-                centerY - textPaint.textSize,
-                centerX - textPaint.measureText(line.text) / 2 + beforeWidth + wordWidth,
-                centerY + textPaint.descent(),
-                highlightPaint,
+    protected open fun renderLyrics(canvas: Canvas, time: Double, audioFrame: AudioFrame?) {
+        if (!handlesOwnLyrics) {
+            foliaEngine.render(
+                canvas = canvas,
+                project = project,
+                time = time,
+                audioFrame = audioFrame,
+                bounds = bounds,
+                textPaint = textPaint,
+                strokePaint = strokePaint,
+                introProgress = introProgress,
+                style = foliaStyle,
             )
-
-            // Redraw word on top
-            textPaint.color = android.graphics.Color.parseColor("#000000")
-            canvas.drawText(word.text, centerX - textPaint.measureText(line.text) / 2 + beforeWidth + wordWidth / 2, centerY, textPaint)
-            textPaint.color = android.graphics.Color.parseColor(project.textColor)
         }
+    }
+
+    protected open fun renderLyrics(canvas: Canvas, time: Double) {
+        renderLyrics(canvas, time, null)
     }
 
     override fun dispose() {

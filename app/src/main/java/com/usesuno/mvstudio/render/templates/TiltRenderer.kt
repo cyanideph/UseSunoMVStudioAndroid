@@ -1,26 +1,60 @@
 package com.usesuno.mvstudio.render.templates
 
+import android.graphics.Camera
 import android.graphics.Canvas
+import android.graphics.Matrix
 import android.graphics.Paint
-import android.graphics.Path
 import android.graphics.Rect
 import com.usesuno.mvstudio.domain.model.*
 import com.usesuno.mvstudio.render.engine.Canvas2DRenderer
-import kotlin.math.sin
-import kotlin.math.cos
+import com.usesuno.mvstudio.render.engine.FoliaLyricStyle
 import kotlin.math.PI
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.sqrt
 
 /**
- * Tilt template - 3D tilted text with perspective effect
+ * Tilt template - Folia 3D tilted text with spatial perspective projection and reactive grid
  */
 class TiltRenderer : Canvas2DRenderer(Template.TILT) {
 
     private var rotationX = 0.0
     private var rotationY = 0.0
-    private val paint = Paint().apply { isAntiAlias = true; style = Paint.Style.FILL }
+    private val gridPaint = Paint().apply { isAntiAlias = true; style = Paint.Style.STROKE; strokeWidth = 1f }
+    private val camera = Camera()
+    private val matrix = Matrix()
+
+    override val foliaStyle = object : FoliaLyricStyle {
+        override fun transformLine(
+            canvas: Canvas,
+            line: LyricLine,
+            lineIndex: Int,
+            distFromCenter: Float,
+            lineX: Float,
+            lineY: Float,
+            scale: Float,
+            alpha: Float,
+            audioFrame: AudioFrame?,
+            drawContent: (Canvas) -> Unit,
+        ) {
+            canvas.save()
+
+            // Real 3D camera projection with perspective foreshortening
+            val pitch = (rotationX * 180 / PI).toFloat().coerceIn(-45f, 45f)
+            val yaw = (rotationY * 180 / PI).toFloat().coerceIn(-45f, 45f)
+
+            camera.save()
+            camera.rotateX(pitch)
+            camera.rotateY(yaw)
+            camera.getMatrix(matrix)
+            camera.restore()
+
+            matrix.preTranslate(-lineX, -lineY)
+            matrix.postScale(scale, scale, lineX, lineY)
+            matrix.postTranslate(lineX, lineY)
+
+            canvas.concat(matrix)
+            drawContent(canvas)
+            canvas.restore()
+        }
+    }
 
     override fun renderTemplate(canvas: Canvas, time: Double, audioFrame: AudioFrame?) {
         val audioPower = audioFrame?.power ?: 0f
@@ -29,59 +63,41 @@ class TiltRenderer : Canvas2DRenderer(Template.TILT) {
         val reactivity = project.audioReactivityConfig
         val bassInfluence = audioBass * reactivity.bassGain
 
-        // Auto-rotate based on audio
-        rotationY += (0.01 + bassInfluence * 0.05) * project.templateTuning.speed
-        rotationX += (0.005 + audioPower * 0.02) * project.templateTuning.speed
+        // Smooth spatial tilt oscillation influenced by audio
+        val speed = project.templateTuning.speed.toDouble()
+        rotationY = kotlin.math.sin(time * 0.8 * speed) * 0.35 + (bassInfluence * 0.15)
+        rotationX = kotlin.math.cos(time * 0.6 * speed) * 0.20 + (audioPower * 0.10)
 
         val centerX = bounds.centerX().toFloat()
         val centerY = bounds.centerY().toFloat()
 
-        // Draw background grid
-        drawGrid(canvas, centerX, centerY, rotationX, rotationY)
-
-        // Draw lyrics with 3D tilt
-        drawTiltedLyrics(canvas, centerX, centerY, rotationX, rotationY)
+        // Draw 3D perspective grid plane
+        drawGrid(canvas, centerX, centerY)
     }
 
-    private fun drawGrid(canvas: Canvas, centerX: Float, centerY: Float, rx: Double, ry: Double) {
-        paint.color = android.graphics.Color.parseColor("#FFFFFF10")
-        paint.strokeWidth = 1f
-        paint.style = Paint.Style.STROKE
+    private fun drawGrid(canvas: Canvas, centerX: Float, centerY: Float) {
+        gridPaint.color = android.graphics.Color.parseColor("#FFFFFF15")
 
-        val spacing = 60f
-        val gridSize = 10
+        val spacing = 70f
+        val gridSize = 8
 
         canvas.save()
-        canvas.translate(centerX, centerY)
-        canvas.rotate((ry * 180 / PI).toFloat(), 0f, 0f)
-        canvas.rotate((rx * 180 / PI).toFloat(), 1f, 0f)
+        camera.save()
+        camera.rotateX((rotationX * 180 / PI).toFloat().coerceIn(-45f, 45f))
+        camera.rotateY((rotationY * 180 / PI).toFloat().coerceIn(-45f, 45f))
+        camera.getMatrix(matrix)
+        camera.restore()
+
+        matrix.preTranslate(-centerX, -centerY)
+        matrix.postTranslate(centerX, centerY)
+        canvas.concat(matrix)
 
         for (i in -gridSize..gridSize) {
             val offset = i * spacing
-            canvas.drawLine(-gridSize * spacing, offset, gridSize * spacing, offset, paint)
-            canvas.drawLine(offset, -gridSize * spacing, offset, gridSize * spacing, paint)
+            canvas.drawLine(-gridSize * spacing, offset, gridSize * spacing, offset, gridPaint)
+            canvas.drawLine(offset, -gridSize * spacing, offset, gridSize * spacing, gridPaint)
         }
 
         canvas.restore()
-    }
-
-    private fun drawTiltedLyrics(canvas: Canvas, centerX: Float, centerY: Float, rx: Double, ry: Double) {
-        val visibleLines = project.lines.filter { it.start <= animationTime && it.end >= animationTime }
-        val lineHeight = textPaint.textSize * project.lineHeight
-
-        for ((index, line) in visibleLines.withIndex()) {
-            val y = centerY + (index - visibleLines.size / 2f) * lineHeight
-
-            canvas.save()
-            canvas.translate(centerX, y)
-            canvas.rotate((ry * 180 / PI).toFloat(), 0f, 0f)
-            canvas.rotate((rx * 180 / PI).toFloat(), 1f, 0f)
-            canvas.scale(0.8f, 0.8f)
-
-            textPaint.alpha = (255 * introProgress).toInt()
-            canvas.drawText(line.text, 0f, 0f, textPaint)
-
-            canvas.restore()
-        }
     }
 }

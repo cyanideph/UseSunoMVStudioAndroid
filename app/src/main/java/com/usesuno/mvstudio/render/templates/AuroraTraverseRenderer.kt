@@ -23,6 +23,33 @@ class AuroraTraverseRenderer : Canvas2DRenderer(Template.AURORA_TRAVERSE) {
     private val glowPaint = Paint().apply { isAntiAlias = true; style = Paint.Style.FILL }
     private var timeOffset = 0.0
 
+    override val foliaStyle = object : com.usesuno.mvstudio.render.engine.FoliaLyricStyle {
+        override fun drawWord(
+            canvas: Canvas,
+            word: LyricWord,
+            wordX: Float,
+            baselineY: Float,
+            wordWidth: Float,
+            isActive: Boolean,
+            isSpoken: Boolean,
+            wordProgress: Float,
+            lineAlpha: Float,
+            textPaint: Paint,
+            audioFrame: AudioFrame?,
+        ): Boolean {
+            if (isActive) {
+                // Aurora borealis green-cyan luminescence
+                val auroraGlow = Paint(textPaint).apply {
+                    color = 0xFF55FFAA.toInt()
+                    alpha = (90 * lineAlpha).toInt().coerceIn(0, 255)
+                    setShadowLayer(18f, 0f, 0f, 0xFF00FFCC.toInt())
+                }
+                canvas.drawText(word.text, wordX, baselineY, auroraGlow)
+            }
+            return false
+        }
+    }
+
     data class AuroraCurtain(
         var x: Float,
         var baseY: Float,

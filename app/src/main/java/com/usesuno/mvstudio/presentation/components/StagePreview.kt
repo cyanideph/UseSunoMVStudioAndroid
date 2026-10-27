@@ -42,6 +42,16 @@ fun StagePreview(
         effectiveTime = currentTime
     }
 
+    LaunchedEffect(effectiveTime, audioAnalysis) {
+        if (audioAnalysis != null && audioAnalysis.frames.isNotEmpty()) {
+            val frames = audioAnalysis.frames
+            val frameIndex = (effectiveTime * 30.0).toInt().coerceIn(0, frames.size - 1)
+            currentAudioFrame = frames[frameIndex]
+        } else {
+            currentAudioFrame = null
+        }
+    }
+
     val aspectRatio = when (project.aspectRatio) {
         com.usesuno.mvstudio.domain.model.AspectRatio.RATIO_9_16,
         com.usesuno.mvstudio.domain.model.AspectRatio.RATIO_3_4 -> 9f / 16f

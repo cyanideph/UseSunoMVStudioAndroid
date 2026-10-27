@@ -21,6 +21,32 @@ class TemperaRenderer : Canvas2DRenderer(Template.TEMPERA) {
     private val paint = Paint().apply { isAntiAlias = true; style = Paint.Style.FILL }
     private var timeOffset = 0.0
 
+    override val foliaStyle = object : com.usesuno.mvstudio.render.engine.FoliaLyricStyle {
+        override fun drawWord(
+            canvas: Canvas,
+            word: LyricWord,
+            wordX: Float,
+            baselineY: Float,
+            wordWidth: Float,
+            isActive: Boolean,
+            isSpoken: Boolean,
+            wordProgress: Float,
+            lineAlpha: Float,
+            textPaint: Paint,
+            audioFrame: AudioFrame?,
+        ): Boolean {
+            if (isActive) {
+                // Soft watercolor pigment bloom around active word
+                val bloomPaint = Paint(textPaint).apply {
+                    alpha = (75 * lineAlpha).toInt().coerceIn(0, 255)
+                    setShadowLayer(18f, 0f, 0f, 0xFFFF8844.toInt())
+                }
+                canvas.drawText(word.text, wordX, baselineY, bloomPaint)
+            }
+            return false
+        }
+    }
+
     data class PaintDrop(
         var x: Float,
         var y: Float,

@@ -22,6 +22,37 @@ class LumiereRenderer : Canvas2DRenderer(Template.LUMIERE) {
     private val flares = mutableListOf<LensFlare>()
     private val paint = Paint().apply { isAntiAlias = true; style = Paint.Style.FILL }
     private var timeOffset = 0.0
+    private val flareAccentPaint = Paint().apply {
+        isAntiAlias = true
+        style = Paint.Style.STROKE
+        strokeWidth = 2f
+    }
+
+    override val foliaStyle = object : com.usesuno.mvstudio.render.engine.FoliaLyricStyle {
+        override fun drawLineAccents(
+            canvas: Canvas,
+            line: LyricLine,
+            centerX: Float,
+            lineY: Float,
+            lineWidth: Float,
+            isActive: Boolean,
+            distFromCenter: Float,
+            lineAlpha: Float,
+            audioFrame: AudioFrame?,
+        ) {
+            if (isActive && lineAlpha > 0.3f) {
+                // Anamorphic horizontal lens flare sweep across active line
+                val power = audioFrame?.power ?: 0f
+                val treble = audioFrame?.treble ?: 0f
+                flareAccentPaint.color = 0xFF88DDFF.toInt()
+                flareAccentPaint.alpha = (90 * lineAlpha * (1f + treble * 0.7f)).toInt().coerceIn(0, 255)
+                flareAccentPaint.setShadowLayer(14f, 0f, 0f, 0xFF88DDFF.toInt())
+                val sweepWidth = (lineWidth * 1.3f + power * 120f)
+                canvas.drawLine(centerX - sweepWidth / 2f, lineY, centerX + sweepWidth / 2f, lineY, flareAccentPaint)
+            }
+        }
+    }
+
 
     data class LightRay(
         var angle: Float,
@@ -108,9 +139,6 @@ class LumiereRenderer : Canvas2DRenderer(Template.LUMIERE) {
         for (flare in flares) {
             drawLensFlare(canvas, flare, centerX, centerY, trebleInfluence)
         }
-
-        // Draw lyrics with cinematic lighting
-        drawCinematicLyrics(canvas, centerX, centerY)
     }
 
     private fun drawLightRay(canvas: Canvas, ray: LightRay, cx: Float, cy: Float, treble: Float) {
@@ -177,20 +205,7 @@ class LumiereRenderer : Canvas2DRenderer(Template.LUMIERE) {
         canvas.drawCircle(cx, cy, radius, ringPaint)
     }
 
-    private fun drawCinematicLyrics(canvas: Canvas, centerX: Float, centerY: Float) {
-        val visibleLines = project.lines.filter { it.start <= animationTime && it.end >= animationTime }
-        val lineHeight = textPaint.textSize * project.lineHeight * 1.2f
 
-        for ((index, line) in visibleLines.withIndex()) {
-            val y = centerY + (index - visibleLines.size / 2f) * lineHeight
-
-            // Add vignette-aware alpha
-            val vignette = 1f - (abs(index.toFloat() - visibleLines.size / 2f) / (visibleLines.size / 2f + 1f)) * 0.3f
-            textPaint.alpha = (255 * introProgress * vignette).toInt()
-
-            canvas.drawText(line.text, centerX, y, textPaint)
-        }
-    }
 
     override fun dispose() {
         lightRays.clear()

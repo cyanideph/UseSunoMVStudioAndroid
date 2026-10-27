@@ -5,19 +5,23 @@ import android.graphics.Paint
 import android.graphics.Rect
 import com.usesuno.mvstudio.domain.model.*
 import com.usesuno.mvstudio.render.engine.Canvas2DRenderer
-import kotlin.math.*
+import com.usesuno.mvstudio.render.engine.FoliaLyricStyle
+import kotlin.math.cos
+import kotlin.math.sin
 
 /**
- * Astral template - 3D starfield with lyrics floating in space
- * Uses simple 3D projection (no external 3D engine)
+ * Astral template - 3D starfield space visualizer with perspective lyrics
  */
 class AstralRenderer : Canvas2DRenderer(Template.ASTRAL) {
 
     private val stars = mutableListOf<Star>()
     private val starPaint = Paint().apply { isAntiAlias = true; style = Paint.Style.FILL }
-    private val linePaint = Paint().apply { isAntiAlias = true; style = Paint.Style.STROKE; strokeWidth = 1f }
     private var rotationY = 0.0
     private var rotationX = 0.0
+    private var cosRY = 1f
+    private var sinRY = 0f
+    private var cosRX = 1f
+    private var sinRX = 0f
 
     data class Star(
         var x: Float,
@@ -26,135 +30,118 @@ class AstralRenderer : Canvas2DRenderer(Template.ASTRAL) {
         var size: Float,
         var hue: Float,
         var brightness: Float,
-    ) {
-        var screenX = 0f
-        var screenY = 0f
-        var screenSize = 0f
-    }
+        var screenX: Float = 0f,
+        var screenY: Float = 0f,
+        var screenSize: Float = 0f,
+    )
 
     override fun onInitialize() {
-        val numStars = 300
-        val depth = 2000f
+        stars.clear()
+        val numStars = 200
+        val maxDist = 2000f
 
-        repeat(numStars) {
-            val theta = (Math.random() * 2 * PI).toFloat()
-            val phi = (Math.random() * PI - PI / 2).toFloat()
-            val r = (Math.random() * depth).toFloat()
+        for (i in 0 until numStars) {
+            stars.add(
+                Star(
+                    x = ((Math.random() - 0.5) * maxDist * 2).toFloat(),
+                    y = ((Math.random() - 0.5) * maxDist * 2).toFloat(),
+                    z = (Math.random() * maxDist).toFloat(),
+                    size = (Math.random() * 2 + 1).toFloat(),
+                    hue = (Math.random() * 60 + 200).toFloat(), // Blue to purple
+                    brightness = (Math.random() * 0.5 + 0.5).toFloat(),
+                )
+            )
+        }
+    }
 
-            stars.add(Star(
-                x = (r * cos(phi) * cos(theta)).toFloat(),
-                y = (r * sin(phi)).toFloat(),
-                z = (r * cos(phi) * sin(theta)).toFloat(),
-                size = (Math.random() * 2 + 0.5).toFloat(),
-                hue = (Math.random() * 60 + 200).toFloat(), // Blue-white
-                brightness = (Math.random() * 0.5 + 0.5).toFloat(),
-            ))
+    override val foliaStyle = object : FoliaLyricStyle {
+        override fun transformLine(
+            canvas: Canvas,
+            line: LyricLine,
+            lineIndex: Int,
+            distFromCenter: Float,
+            lineX: Float,
+            lineY: Float,
+            scale: Float,
+            alpha: Float,
+            audioFrame: AudioFrame?,
+            drawContent: (Canvas) -> Unit,
+        ) {
+            val zPos = -100f + distFromCenter * 150f
+            val yPos = lineY - bounds.centerY().toFloat()
+
+            val x1 = -zPos * sinRY
+            val z1 = zPos * cosRY
+            val y1 = yPos * cosRX - z1 * sinRX
+            val z2 = yPos * sinRX + z1 * cosRX
+
+            val focalLength = 1000f
+            val projScale = (focalLength / (focalLength + z2)).coerceIn(0.5f, 1.8f)
+            val screenX = bounds.centerX().toFloat() + x1 * projScale
+            val screenY = bounds.centerY().toFloat() + y1 * projScale
+
+            canvas.save()
+            canvas.translate(screenX, screenY)
+            canvas.scale(scale * projScale, scale * projScale)
+            drawContent(canvas)
+            canvas.restore()
         }
     }
 
     override fun renderTemplate(canvas: Canvas, time: Double, audioFrame: AudioFrame?) {
         val audioPower = audioFrame?.power ?: 0f
         val audioBass = audioFrame?.bass ?: 0f
-        val audioTreble = audioFrame?.treble ?: 0f
 
         val reactivity = project.audioReactivityConfig
         val bassInfluence = audioBass * reactivity.bassGain
-        val trebleInfluence = audioTreble * reactivity.trebleGain
 
-        // Rotate starfield
-        rotationY += (0.001 + bassInfluence * 0.01) * project.templateTuning.speed
-        rotationX += (0.0005 + audioPower * 0.005) * project.templateTuning.speed
+        val speed = project.templateTuning.speed
+        rotationY += (0.002 + bassInfluence * 0.01) * speed
+        rotationX += (0.001 + audioPower * 0.005) * speed
 
-        val cosRY = cos(rotationY).toFloat()
-        val sinRY = sin(rotationY).toFloat()
-        val cosRX = cos(rotationX).toFloat()
-        val sinRX = sin(rotationX).toFloat()
+        cosRY = cos(rotationY).toFloat()
+        sinRY = sin(rotationY).toFloat()
+        cosRX = cos(rotationX).toFloat()
+        sinRX = sin(rotationX).toFloat()
 
         val centerX = bounds.centerX().toFloat()
         val centerY = bounds.centerY().toFloat()
         val focalLength = 1000f
 
-        // Project and sort stars by depth
+        // Update and project stars
         for (star in stars) {
-            // Rotate Y
+            star.z -= (5f + bassInfluence * 20f) * speed
+            if (star.z < 10f) {
+                star.z = 2000f
+                star.x = ((Math.random() - 0.5) * 4000).toFloat()
+                star.y = ((Math.random() - 0.5) * 4000).toFloat()
+            }
+
             val x1 = star.x * cosRY - star.z * sinRY
             val z1 = star.x * sinRY + star.z * cosRY
-
-            // Rotate X
             val y1 = star.y * cosRX - z1 * sinRX
             val z2 = star.y * sinRX + z1 * cosRX
 
-            // Perspective projection
             val scale = focalLength / (focalLength + z2)
             star.screenX = centerX + x1 * scale
             star.screenY = centerY + y1 * scale
-            star.screenSize = star.size * scale * (1f + audioPower * 2f)
+            star.screenSize = star.size * scale * (1f + audioPower * 1.5f)
         }
-
-        // Sort by depth (far to near)
-        stars.sortByDescending { it.z }
 
         // Draw stars
         for (star in stars) {
             if (star.screenX < -50 || star.screenX > width + 50 ||
-                star.screenY < -50 || star.screenY > height + 50) continue
+                star.screenY < -50 || star.screenY > height + 50
+            ) continue
 
             val alpha = (star.brightness * (1f + audioPower) * 255).toInt().coerceIn(0, 255)
-            val color = android.graphics.Color.HSVToColor(alpha, floatArrayOf(star.hue, 0.2f, 1f))
-            starPaint.color = color
-
+            starPaint.color = android.graphics.Color.HSVToColor(alpha, floatArrayOf(star.hue, 0.2f, 1f))
             canvas.drawCircle(star.screenX, star.screenY, star.screenSize, starPaint)
-
-            // Draw connections to nearby stars (constellation lines)
-            if (star.z < 500 && Math.random() < 0.001) {
-                linePaint.color = android.graphics.Color.HSVToColor(30, floatArrayOf(star.hue, 0.1f, 1f))
-                // Would connect to nearby stars
-            }
-        }
-
-        // Draw lyrics floating in space
-        drawSpaceLyrics(canvas, centerX, centerY, focalLength, cosRY, sinRY, cosRX, sinRX)
-    }
-
-    private fun drawSpaceLyrics(
-        canvas: Canvas,
-        centerX: Float, centerY: Float,
-        focalLength: Float,
-        cosRY: Float, sinRY: Float,
-        cosRX: Float, sinRX: Float,
-    ) {
-        val visibleLines = project.lines.filter { it.start <= animationTime && it.end >= animationTime }
-        val lineHeight = textPaint.textSize * project.lineHeight * 1.5f
-
-        for ((index, line) in visibleLines.withIndex()) {
-            // Position in 3D space
-            val zPos = -200f + index * 100f
-            val yPos = (index - visibleLines.size / 2f) * lineHeight
-
-            // Rotate
-            val x1 = 0f * cosRY - zPos * sinRY
-            val z1 = 0f * sinRY + zPos * cosRY
-            val y1 = yPos * cosRX - z1 * sinRX
-            val z2 = yPos * sinRX + z1 * cosRX
-
-            // Project
-            val scale = focalLength / (focalLength + z2)
-            val screenX = centerX + x1 * scale
-            val screenY = centerY + y1 * scale
-            val textScale = scale * (0.8f + 0.2f * introProgress)
-
-            canvas.save()
-            canvas.translate(screenX, screenY)
-            canvas.scale(textScale, textScale)
-
-            textPaint.alpha = (255 * introProgress * (0.5f + 0.5f * scale)).toInt()
-            canvas.drawText(line.text, 0f, 0f, textPaint)
-
-            canvas.restore()
         }
     }
 
     override fun dispose() {
+        super.dispose()
         stars.clear()
     }
 }

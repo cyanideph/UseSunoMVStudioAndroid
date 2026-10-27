@@ -22,6 +22,35 @@ class CappellaRenderer : Canvas2DRenderer(Template.CAPPELLA) {
     private val fillPaint = Paint().apply { isAntiAlias = true; style = Paint.Style.FILL }
     private var lastVocalLevel = 0f
 
+    override val foliaStyle = object : com.usesuno.mvstudio.render.engine.FoliaLyricStyle {
+        override fun drawLineAccents(
+            canvas: Canvas,
+            line: LyricLine,
+            centerX: Float,
+            lineY: Float,
+            lineWidth: Float,
+            isActive: Boolean,
+            distFromCenter: Float,
+            lineAlpha: Float,
+            audioFrame: AudioFrame?,
+        ) {
+            if (isActive && lineAlpha > 0.4f) {
+                val vocal = audioFrame?.vocal ?: 0f
+                if (vocal > 0.25f) {
+                    val ripplePaint = Paint().apply {
+                        isAntiAlias = true
+                        style = Paint.Style.STROKE
+                        strokeWidth = 1.5f
+                        color = 0xFFEE88FF.toInt()
+                        alpha = (70 * lineAlpha * vocal).toInt().coerceIn(0, 255)
+                    }
+                    val radius = textPaint.textSize * 0.9f + vocal * 40f
+                    canvas.drawCircle(centerX, lineY, radius, ripplePaint)
+                }
+            }
+        }
+    }
+
     data class HarmonyRing(
         var radius: Float,
         var maxRadius: Float,

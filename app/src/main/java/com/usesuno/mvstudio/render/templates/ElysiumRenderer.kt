@@ -23,6 +23,33 @@ class ElysiumRenderer : Canvas2DRenderer(Template.ELYSIUM) {
     private val paint = Paint().apply { isAntiAlias = true; style = Paint.Style.FILL }
     private val spiralPaint = Paint().apply { isAntiAlias = true; style = Paint.Style.STROKE; strokeWidth = 1.5f }
 
+    override val foliaStyle = object : com.usesuno.mvstudio.render.engine.FoliaLyricStyle {
+        override fun drawWord(
+            canvas: Canvas,
+            word: LyricWord,
+            wordX: Float,
+            baselineY: Float,
+            wordWidth: Float,
+            isActive: Boolean,
+            isSpoken: Boolean,
+            wordProgress: Float,
+            lineAlpha: Float,
+            textPaint: Paint,
+            audioFrame: AudioFrame?,
+        ): Boolean {
+            if (isActive) {
+                // Golden ratio ethereal luminescence under active word
+                val goldPaint = Paint(textPaint).apply {
+                    color = 0xFFFFD700.toInt()
+                    alpha = (100 * lineAlpha).toInt().coerceIn(0, 255)
+                    setShadowLayer(18f, 0f, 0f, 0xFFFFCC33.toInt())
+                }
+                canvas.drawText(word.text, wordX, baselineY, goldPaint)
+            }
+            return false
+        }
+    }
+
     data class ElysiumParticle(
         var x: Float,
         var y: Float,

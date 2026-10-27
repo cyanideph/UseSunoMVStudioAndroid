@@ -23,6 +23,39 @@ class SyzygyRenderer : Canvas2DRenderer(Template.SYZYGY) {
     private val paint = Paint().apply { isAntiAlias = true; style = Paint.Style.FILL }
     private val orbitPaint = Paint().apply { isAntiAlias = true; style = Paint.Style.STROKE; strokeWidth = 1f }
 
+    override val foliaStyle = object : com.usesuno.mvstudio.render.engine.FoliaLyricStyle {
+        override fun drawLineAccents(
+            canvas: Canvas,
+            line: LyricLine,
+            centerX: Float,
+            lineY: Float,
+            lineWidth: Float,
+            isActive: Boolean,
+            distFromCenter: Float,
+            lineAlpha: Float,
+            audioFrame: AudioFrame?,
+        ) {
+            if (isActive && lineAlpha > 0.4f) {
+                val orbitRadiusX = lineWidth * 0.6f
+                val orbitRadiusY = textPaint.textSize * 0.45f
+                val haloPaint = Paint().apply {
+                    isAntiAlias = true
+                    style = Paint.Style.STROKE
+                    strokeWidth = 1f
+                    color = 0xFF88CCFF.toInt()
+                    alpha = (65 * lineAlpha).toInt().coerceIn(0, 255)
+                }
+                val oval = android.graphics.RectF(
+                    centerX - orbitRadiusX,
+                    lineY - orbitRadiusY,
+                    centerX + orbitRadiusX,
+                    lineY + orbitRadiusY,
+                )
+                canvas.drawOval(oval, haloPaint)
+            }
+        }
+    }
+
     data class Planet(
         var angle: Float,
         var distance: Float,

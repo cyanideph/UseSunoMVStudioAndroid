@@ -21,6 +21,33 @@ class CladdaghRenderer : Canvas2DRenderer(Template.CLADDAGH) {
     private val paint = Paint().apply { isAntiAlias = true; style = Paint.Style.STROKE; strokeWidth = 3f }
     private val fillPaint = Paint().apply { isAntiAlias = true; style = Paint.Style.FILL }
 
+    override val foliaStyle = object : com.usesuno.mvstudio.render.engine.FoliaLyricStyle {
+        override fun drawWord(
+            canvas: Canvas,
+            word: LyricWord,
+            wordX: Float,
+            baselineY: Float,
+            wordWidth: Float,
+            isActive: Boolean,
+            isSpoken: Boolean,
+            wordProgress: Float,
+            lineAlpha: Float,
+            textPaint: Paint,
+            audioFrame: AudioFrame?,
+        ): Boolean {
+            if (isActive) {
+                // Celtic knot emerald luminescence glow on active word
+                val knotGlow = Paint(textPaint).apply {
+                    color = 0xFF55FFAA.toInt()
+                    alpha = (90 * lineAlpha).toInt().coerceIn(0, 255)
+                    setShadowLayer(16f, 0f, 0f, 0xFF33CC88.toInt())
+                }
+                canvas.drawText(word.text, wordX, baselineY, knotGlow)
+            }
+            return false
+        }
+    }
+
     data class CelticKnot(
         var centerX: Float,
         var centerY: Float,

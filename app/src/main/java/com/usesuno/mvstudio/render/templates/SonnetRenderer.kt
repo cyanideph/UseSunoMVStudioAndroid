@@ -21,6 +21,34 @@ class SonnetRenderer : Canvas2DRenderer(Template.SONNET) {
     private val paint = Paint().apply { isAntiAlias = true; style = Paint.Style.STROKE; strokeWidth = 2f }
     private val fillPaint = Paint().apply { isAntiAlias = true; style = Paint.Style.FILL }
 
+    override val foliaStyle = object : com.usesuno.mvstudio.render.engine.FoliaLyricStyle {
+        override fun drawLineAccents(
+            canvas: Canvas,
+            line: LyricLine,
+            centerX: Float,
+            lineY: Float,
+            lineWidth: Float,
+            isActive: Boolean,
+            distFromCenter: Float,
+            lineAlpha: Float,
+            audioFrame: AudioFrame?,
+        ) {
+            if (isActive && lineAlpha > 0.4f) {
+                val flourishWidth = lineWidth * 0.35f
+                val decorPaint = Paint().apply {
+                    isAntiAlias = true
+                    style = Paint.Style.STROKE
+                    strokeWidth = 1.2f
+                    color = 0xFFE0D0B0.toInt()
+                    alpha = (85 * lineAlpha).toInt().coerceIn(0, 255)
+                }
+                val decorY = lineY + textPaint.textSize * 0.4f
+                canvas.drawLine(centerX - flourishWidth, decorY, centerX + flourishWidth, decorY, decorPaint)
+                canvas.drawCircle(centerX, decorY, 2.5f, decorPaint)
+            }
+        }
+    }
+
     data class Flourish(
         var x: Float,
         var y: Float,

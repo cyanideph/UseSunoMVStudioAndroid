@@ -27,6 +27,33 @@ class FumeRenderer : Canvas2DRenderer(Template.FUME) {
     private var timeOffset = 0.0
     private var lastAudioPower = 0f
 
+    override val foliaStyle = object : com.usesuno.mvstudio.render.engine.FoliaLyricStyle {
+        override fun drawWord(
+            canvas: Canvas,
+            word: LyricWord,
+            wordX: Float,
+            baselineY: Float,
+            wordWidth: Float,
+            isActive: Boolean,
+            isSpoken: Boolean,
+            wordProgress: Float,
+            lineAlpha: Float,
+            textPaint: Paint,
+            audioFrame: AudioFrame?,
+        ): Boolean {
+            if (isActive) {
+                // Fume atmospheric vapor luminescence around active word
+                val vaporGlow = Paint(textPaint).apply {
+                    color = 0xFFBB99FF.toInt()
+                    alpha = (90 * lineAlpha).toInt().coerceIn(0, 255)
+                    setShadowLayer(22f, 0f, 0f, 0xFF9966FF.toInt())
+                }
+                canvas.drawText(word.text, wordX, baselineY, vaporGlow)
+            }
+            return false
+        }
+    }
+
     data class Particle(
         var x: Float,
         var y: Float,

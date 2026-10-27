@@ -152,30 +152,28 @@ class DioramaRenderer : Canvas2DRenderer(Template.DIORAMA) {
         canvas.drawPath(path, paint)
     }
 
-    override fun renderLyrics(canvas: Canvas, time: Double) {
-        // Override to render lyrics at specific depth
-        val lyricsLayerZ = -150f
-        val focalLength = 1000f
-        val centerX = bounds.centerX().toFloat()
-        val centerY = bounds.centerY().toFloat()
-
-        val visibleLines = project.lines.filter { it.start <= time && it.end >= time }
-        val lineHeight = textPaint.textSize * project.lineHeight * 1.5f
-
-        for ((index, line) in visibleLines.withIndex()) {
-            val z2 = lyricsLayerZ - cameraZ.toFloat()
-            if (z2 <= 0) continue
-
-            val scale = focalLength / (focalLength + z2)
-            val screenY = centerY + (index - visibleLines.size / 2f) * lineHeight * scale
+    override val foliaStyle = object : com.usesuno.mvstudio.render.engine.FoliaLyricStyle {
+        override fun transformLine(
+            canvas: Canvas,
+            line: LyricLine,
+            lineIndex: Int,
+            distFromCenter: Float,
+            lineX: Float,
+            lineY: Float,
+            scale: Float,
+            alpha: Float,
+            audioFrame: AudioFrame?,
+            drawContent: (Canvas) -> Unit,
+        ) {
+            val lyricsLayerZ = -150f
+            val focalLength = 1000f
+            val z2 = (lyricsLayerZ - cameraZ.toFloat()).coerceAtLeast(10f)
+            val depthScale = (focalLength / (focalLength + z2)).coerceIn(0.6f, 1.4f)
 
             canvas.save()
-            canvas.translate(centerX, screenY)
-            canvas.scale(scale, scale)
-
-            textPaint.alpha = (255 * introProgress).toInt()
-            canvas.drawText(line.text, 0f, 0f, textPaint)
-
+            canvas.translate(lineX, lineY)
+            canvas.scale(scale * depthScale, scale * depthScale)
+            drawContent(canvas)
             canvas.restore()
         }
     }

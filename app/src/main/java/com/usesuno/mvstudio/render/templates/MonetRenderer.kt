@@ -19,8 +19,34 @@ class MonetRenderer : Canvas2DRenderer(Template.MONET) {
 
     private val strokes = mutableListOf<BrushStroke>()
     private val paint = Paint().apply { isAntiAlias = true; style = Paint.Style.STROKE; strokeWidth = 2f }
-    private val fillPaint = Paint().apply { isAntiAlias = true; style = Paint.Style.FILL }
     private var timeOffset = 0.0
+
+    override val foliaStyle = object : com.usesuno.mvstudio.render.engine.FoliaLyricStyle {
+        override fun drawWord(
+            canvas: Canvas,
+            word: LyricWord,
+            wordX: Float,
+            baselineY: Float,
+            wordWidth: Float,
+            isActive: Boolean,
+            isSpoken: Boolean,
+            wordProgress: Float,
+            lineAlpha: Float,
+            textPaint: Paint,
+            audioFrame: AudioFrame?,
+        ): Boolean {
+            if (isActive) {
+                // Impressionist pastel dappled light aura on active word
+                val pastelGlow = Paint(textPaint).apply {
+                    color = 0xFFFFDDEE.toInt()
+                    alpha = (85 * lineAlpha).toInt().coerceIn(0, 255)
+                    setShadowLayer(16f, 0f, 0f, 0xFF88CCFF.toInt())
+                }
+                canvas.drawText(word.text, wordX, baselineY, pastelGlow)
+            }
+            return false
+        }
+    }
 
     data class BrushStroke(
         var x: Float,
