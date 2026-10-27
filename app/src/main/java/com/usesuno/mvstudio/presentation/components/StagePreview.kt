@@ -30,12 +30,17 @@ import com.usesuno.mvstudio.domain.audio.PlaybackClock
 fun StagePreview(
     project: Project,
     modifier: Modifier = Modifier,
+    currentTime: Double = 0.0,
     playbackClock: PlaybackClock? = null,
     audioAnalysis: AudioAnalysis? = null,
 ) {
     var renderer by remember { mutableStateOf<com.usesuno.mvstudio.render.engine.RenderEngine?>(null) }
-    var currentTime by remember { mutableStateOf(0.0) }
+    var effectiveTime by remember { mutableStateOf(currentTime) }
     var currentAudioFrame by remember { mutableStateOf<AudioFrame?>(null) }
+
+    LaunchedEffect(currentTime) {
+        effectiveTime = currentTime
+    }
 
     val aspectRatio = when (project.aspectRatio) {
         com.usesuno.mvstudio.domain.model.AspectRatio.RATIO_9_16,
@@ -58,7 +63,7 @@ fun StagePreview(
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val bounds = android.graphics.Rect(0, 0, size.width.toInt(), size.height.toInt())
                 drawIntoCanvas { canvas ->
-                    renderer?.renderFrame(canvas.nativeCanvas, currentTime, currentAudioFrame, bounds)
+                    renderer?.renderFrame(canvas.nativeCanvas, effectiveTime, currentAudioFrame, bounds)
                 }
             }
         }
@@ -89,7 +94,7 @@ fun StagePreview(
     // Connect to playback clock
     LaunchedEffect(playbackClock) {
         playbackClock?.currentTime?.collect { time ->
-            currentTime = time
+            effectiveTime = time
         }
     }
 }

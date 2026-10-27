@@ -43,6 +43,10 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+import androidx.activity.compose.BackHandler
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
@@ -62,21 +66,46 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            var currentScreen by remember { mutableStateOf("editor") }
+            var timingAudioUri by remember { mutableStateOf<Uri?>(null) }
+            val scope = rememberCoroutineScope()
+
             UseSunoMVStudioTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
-                    EditorScreen(
-                        project = viewModel.currentProject,
-                        onProjectChange = { viewModel.updateProject(it) },
-                        onExportClick = { format, quality, fps -> viewModel.startExport(format, quality, fps) },
-                        isAudioPlaying = viewModel.isAudioPlaying,
-                        onPlayPauseClick = { viewModel.togglePlayback() },
-                        onSettingsClick = { /* Open settings */ },
-                        onImportAudioClick = { audioPicker.launch(arrayOf("audio/*")) },
-                        onImportLyricsClick = { lyricsPicker.launch(arrayOf("text/*", "application/xml", "application/ttml+xml")) },
-                    )
+                    if (currentScreen == "timing") {
+                        BackHandler {
+                            currentScreen = "editor"
+                        }
+                        com.usesuno.mvstudio.presentation.timestamp.TimestampScreen(
+                            project = viewModel.currentProject,
+                            onProjectChange = { viewModel.updateProject(it) },
+                            onDone = { currentScreen = "editor" },
+                            audioUri = timingAudioUri ?: Uri.EMPTY
+                        )
+                    } else {
+                        EditorScreen(
+                            project = viewModel.currentProject,
+                            onProjectChange = { viewModel.updateProject(it) },
+                            onExportClick = { format, quality, fps -> viewModel.startExport(format, quality, fps) },
+                            isAudioPlaying = viewModel.isAudioPlaying,
+                            onPlayPauseClick = { viewModel.togglePlayback() },
+                            onSettingsClick = { /* Open settings */ },
+                            onImportAudioClick = { audioPicker.launch(arrayOf("audio/*")) },
+                            onImportLyricsClick = { lyricsPicker.launch(arrayOf("text/*", "application/xml", "application/ttml+xml")) },
+                            playbackTime = viewModel.playbackPosition,
+                            onSeekTo = { viewModel.seekTo(it) },
+                            onOpenTimingEditor = {
+                                scope.launch {
+                                    val uri = viewModel.getAudioFileUri()
+                                    timingAudioUri = uri
+                                    currentScreen = "timing"
+                                }
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -127,6 +156,8 @@ class MainViewModel @Inject constructor(
 
     var isAudioPlaying by mutableStateOf(false)
         private set
+    var playbackPosition by mutableStateOf(0.0)
+        private set
     private var mediaPlayer: MediaPlayer? = null
 
     init {
@@ -134,6 +165,36 @@ class MainViewModel @Inject constructor(
             val result = projectSerializer.loadLatestDraft()
             if (result is Result.Success) result.value?.let { currentProject = it }
         }
+    }
+
+    fun seekTo(seconds: Double) {
+        playbackPosition = seconds
+        try {
+            mediaPlayer?.seekTo((seconds * 1000).toInt())
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun startPlaybackTicker() {
+        viewModelScope.launch {
+            while (isAudioPlaying) {
+                mediaPlayer?.let { player ->
+                    if (player.isPlaying) {
+                        playbackPosition = player.currentPosition / 1000.0
+                    }
+                }
+                kotlinx.coroutines.delay(40)
+            }
+        }
+    }
+
+    suspend fun getAudioFileUri(): Uri? = withContext(Dispatchers.IO) {
+        val audioId = currentProject.audioId ?: return@withContext null
+        val asset = AppDatabase.getDatabase(context).assetDao().getById(audioId) ?: return@withContext null
+        val extension = asset.name.substringAfterLast('.', "audio").filter { it.isLetterOrDigit() }.ifBlank { "audio" }
+        val audioFile = File(context.cacheDir, "timing-${asset.id}.$extension").apply { writeBytes(asset.data) }
+        Uri.fromFile(audioFile)
     }
 
     fun updateProject(project: Project) {
@@ -184,6 +245,7 @@ class MainViewModel @Inject constructor(
         if (player != null) {
             player.start()
             isAudioPlaying = true
+            startPlaybackTicker()
             return
         }
         val audioId = currentProject.audioId ?: return
@@ -196,10 +258,13 @@ class MainViewModel @Inject constructor(
             val newPlayer = MediaPlayer()
             try {
                 newPlayer.setDataSource(audioFile.absolutePath)
-                newPlayer.setOnCompletionListener { isAudioPlaying = false }
-                newPlayer.setOnErrorListener { player, _, _ ->
+                newPlayer.setOnCompletionListener {
                     isAudioPlaying = false
-                    player.release()
+                    playbackPosition = 0.0
+                }
+                newPlayer.setOnErrorListener { p, _, _ ->
+                    isAudioPlaying = false
+                    p.release()
                     mediaPlayer = null
                     audioFile.delete()
                     true
@@ -208,6 +273,7 @@ class MainViewModel @Inject constructor(
                 mediaPlayer = newPlayer
                 newPlayer.start()
                 isAudioPlaying = true
+                startPlaybackTicker()
             } catch (error: Exception) {
                 newPlayer.release()
                 audioFile.delete()
