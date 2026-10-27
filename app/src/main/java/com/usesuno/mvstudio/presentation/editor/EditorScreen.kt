@@ -69,6 +69,7 @@ fun EditorScreen(
     onSettingsClick: () -> Unit,
     onImportAudioClick: () -> Unit,
     onImportLyricsClick: () -> Unit,
+    onLoadSampleAudioClick: () -> Unit = {},
     isAudioPlaying: Boolean,
     onPlayPauseClick: () -> Unit,
     playbackTime: Double = 0.0,
@@ -104,6 +105,20 @@ fun EditorScreen(
                         containerColor = MaterialTheme.colorScheme.surfaceContainer
                     ),
                     actions = {
+                        // Demo Track quick button
+                        OutlinedButton(
+                            onClick = onLoadSampleAudioClick,
+                            shape = RoundedCornerShape(8.dp),
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = MaterialTheme.colorScheme.primary
+                            )
+                        ) {
+                            Text("Sample MP3", fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                        }
+
+                        Spacer(modifier = Modifier.width(4.dp))
+
                         // Aspect Ratio Picker Button
                         AspectRatioPicker(
                             selected = project.aspectRatio,
@@ -184,6 +199,7 @@ fun EditorScreen(
                                     playbackTime = playbackTime,
                                     isAudioPlaying = isAudioPlaying,
                                     onPlayPauseClick = onPlayPauseClick,
+                                    onLoadSampleAudioClick = onLoadSampleAudioClick,
                                     modifier = Modifier
                                         .weight(1f)
                                         .fillMaxWidth()
@@ -227,6 +243,7 @@ fun EditorScreen(
                                     playbackTime = playbackTime,
                                     isAudioPlaying = isAudioPlaying,
                                     onPlayPauseClick = onPlayPauseClick,
+                                    onLoadSampleAudioClick = onLoadSampleAudioClick,
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .height(230.dp)
@@ -312,6 +329,7 @@ private fun StagePreviewCard(
     playbackTime: Double,
     isAudioPlaying: Boolean,
     onPlayPauseClick: () -> Unit,
+    onLoadSampleAudioClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Card(
@@ -329,6 +347,47 @@ private fun StagePreviewCard(
                     .fillMaxSize()
                     .padding(4.dp)
             )
+
+            // Empty state overlay if audio not loaded yet
+            if (project.audioId == null) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.55f))
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "No Audio Loaded",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 15.sp
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Bundled sample MP3 is ready to test",
+                        color = Color.LightGray,
+                        fontSize = 11.sp
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Button(
+                        onClick = onLoadSampleAudioClick,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        ),
+                        shape = RoundedCornerShape(20.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource("ic_play_arrow"),
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Load Sample MP3", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
 
             // Bottom Transport Bar
             Box(

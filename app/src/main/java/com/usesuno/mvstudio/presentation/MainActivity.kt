@@ -95,6 +95,7 @@ class MainActivity : ComponentActivity() {
                             onSettingsClick = { /* Open settings */ },
                             onImportAudioClick = { audioPicker.launch(arrayOf("audio/*")) },
                             onImportLyricsClick = { lyricsPicker.launch(arrayOf("text/*", "application/xml", "application/ttml+xml")) },
+                            onLoadSampleAudioClick = { viewModel.loadSampleAudio() },
                             playbackTime = viewModel.playbackPosition,
                             onSeekTo = { viewModel.seekTo(it) },
                             onOpenTimingEditor = {
@@ -195,6 +196,128 @@ class MainViewModel @Inject constructor(
         val extension = asset.name.substringAfterLast('.', "audio").filter { it.isLetterOrDigit() }.ifBlank { "audio" }
         val audioFile = File(context.cacheDir, "timing-${asset.id}.$extension").apply { writeBytes(asset.data) }
         Uri.fromFile(audioFile)
+    }
+
+    fun loadSampleAudio() {
+        viewModelScope.launch {
+            try {
+                val assetId = java.util.UUID.randomUUID().toString()
+                val bytes = withContext(Dispatchers.IO) {
+                    try {
+                        context.assets.open("sample.mp3").use { it.readBytes() }
+                    } catch (e: Exception) {
+                        context.resources.openRawResource(com.usesuno.mvstudio.R.raw.sample).use { it.readBytes() }
+                    }
+                }
+                val sampleFile = File(context.cacheDir, "sample-import.mp3").apply {
+                    writeBytes(bytes)
+                }
+                val fileUri = Uri.fromFile(sampleFile)
+                val audioImport = com.usesuno.mvstudio.utils.AudioFileImporter(context).importAudio(fileUri)
+
+                val importedAsset = if (audioImport is com.usesuno.mvstudio.utils.AudioFileImporter.ImportResult.Success) {
+                    audioImport.asset
+                } else {
+                    AssetEntity(
+                        id = assetId,
+                        projectId = currentProject.id,
+                        name = "Neon Pulse (Sample).mp3",
+                        type = AssetType.AUDIO,
+                        mimeType = "audio/mpeg",
+                        data = bytes
+                    )
+                }
+                AppDatabase.getDatabase(context).assetDao().insert(
+                    importedAsset.copy(projectId = currentProject.id)
+                )
+
+                val sampleLyrics = listOf(
+                    com.usesuno.mvstudio.domain.model.LyricLine(
+                        id = "line-1",
+                        text = "Dancing in the neon lights",
+                        start = 1.0,
+                        end = 4.5,
+                        words = listOf(
+                            com.usesuno.mvstudio.domain.model.LyricWord("Dancing", 1.0, 1.8),
+                            com.usesuno.mvstudio.domain.model.LyricWord("in", 1.9, 2.2),
+                            com.usesuno.mvstudio.domain.model.LyricWord("the", 2.3, 2.6),
+                            com.usesuno.mvstudio.domain.model.LyricWord("neon", 2.7, 3.4),
+                            com.usesuno.mvstudio.domain.model.LyricWord("lights", 3.5, 4.5),
+                        )
+                    ),
+                    com.usesuno.mvstudio.domain.model.LyricLine(
+                        id = "line-2",
+                        text = "Feel the rhythm of the city pulse",
+                        start = 5.0,
+                        end = 9.0,
+                        words = listOf(
+                            com.usesuno.mvstudio.domain.model.LyricWord("Feel", 5.0, 5.6),
+                            com.usesuno.mvstudio.domain.model.LyricWord("the", 5.7, 6.0),
+                            com.usesuno.mvstudio.domain.model.LyricWord("rhythm", 6.1, 7.0),
+                            com.usesuno.mvstudio.domain.model.LyricWord("of", 7.1, 7.3),
+                            com.usesuno.mvstudio.domain.model.LyricWord("the", 7.4, 7.6),
+                            com.usesuno.mvstudio.domain.model.LyricWord("city", 7.7, 8.3),
+                            com.usesuno.mvstudio.domain.model.LyricWord("pulse", 8.4, 9.0),
+                        )
+                    ),
+                    com.usesuno.mvstudio.domain.model.LyricLine(
+                        id = "line-3",
+                        text = "Lost inside this vibrant sound",
+                        start = 9.5,
+                        end = 14.0,
+                        words = listOf(
+                            com.usesuno.mvstudio.domain.model.LyricWord("Lost", 9.5, 10.2),
+                            com.usesuno.mvstudio.domain.model.LyricWord("inside", 10.3, 11.2),
+                            com.usesuno.mvstudio.domain.model.LyricWord("this", 11.3, 11.7),
+                            com.usesuno.mvstudio.domain.model.LyricWord("vibrant", 11.8, 12.8),
+                            com.usesuno.mvstudio.domain.model.LyricWord("sound", 12.9, 14.0),
+                        )
+                    ),
+                    com.usesuno.mvstudio.domain.model.LyricLine(
+                        id = "line-4",
+                        text = "Every beat is taking control",
+                        start = 14.5,
+                        end = 19.0,
+                        words = listOf(
+                            com.usesuno.mvstudio.domain.model.LyricWord("Every", 14.5, 15.2),
+                            com.usesuno.mvstudio.domain.model.LyricWord("beat", 15.3, 16.0),
+                            com.usesuno.mvstudio.domain.model.LyricWord("is", 16.1, 16.4),
+                            com.usesuno.mvstudio.domain.model.LyricWord("taking", 16.5, 17.5),
+                            com.usesuno.mvstudio.domain.model.LyricWord("control", 17.6, 19.0),
+                        )
+                    ),
+                    com.usesuno.mvstudio.domain.model.LyricLine(
+                        id = "line-5",
+                        text = "We light up the night",
+                        start = 19.5,
+                        end = 25.0,
+                        words = listOf(
+                            com.usesuno.mvstudio.domain.model.LyricWord("We", 19.5, 20.0),
+                            com.usesuno.mvstudio.domain.model.LyricWord("light", 20.1, 21.0),
+                            com.usesuno.mvstudio.domain.model.LyricWord("up", 21.1, 21.5),
+                            com.usesuno.mvstudio.domain.model.LyricWord("the", 21.6, 22.0),
+                            com.usesuno.mvstudio.domain.model.LyricWord("night", 22.1, 25.0),
+                        )
+                    )
+                )
+
+                val duration = if (audioImport is com.usesuno.mvstudio.utils.AudioFileImporter.ImportResult.Success) {
+                    audioImport.metadata.duration
+                } else 25.0
+
+                updateProject(currentProject.copy(
+                    name = "Neon Pulse (Sample)",
+                    audioId = importedAsset.id,
+                    audioDuration = if (duration > 0) duration else 25.0,
+                    lines = if (currentProject.lines.isEmpty()) sampleLyrics else currentProject.lines
+                ))
+
+                Toast.makeText(context, "Sample music loaded!", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(context, "Could not load sample: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     fun updateProject(project: Project) {
