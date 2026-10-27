@@ -14,15 +14,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -90,11 +94,11 @@ fun TimestampScreen(
         Column(modifier = Modifier.fillMaxSize()) {
             // Enhanced Top App Bar with better styling
             TopAppBar(
-                title = { Text("Word Timing Editor", fontSize = 20.sp, fontWeight = MaterialTheme.typography.headline6?.fontWeight) },
+                title = { Text("Word Timing Editor", fontSize = 20.sp, fontWeight = MaterialTheme.typography.titleLarge.fontWeight ?: FontWeight.SemiBold) },
                 modifier = Modifier.fillMaxWidth(),
                 navigationIcon = {
                     IconButton(onClick = onDone) {
-                        Icon(painterResource("ic_check"), contentDescription = "Done", contentColor = MaterialTheme.colorScheme.onSurface)
+                        Icon(painterResource("ic_check"), contentDescription = "Done", tint = MaterialTheme.colorScheme.onSurface)
                     }
                 },
                 actions = {
@@ -103,16 +107,16 @@ fun TimestampScreen(
                         Icon(
                             painterResource(if (showWordTiming) "ic_text_fields" else "ic_format_list_numbered"),
                             contentDescription = "Toggle Word/Line",
-                            contentColor = MaterialTheme.colorScheme.onSurface
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
                     // Auto-segment button
                     IconButton(onClick = { /* Auto-segment */ }) {
-                        Icon(painterResource("ic_auto_awesome"), contentDescription = "Auto Segment", contentColor = MaterialTheme.colorScheme.onSurface)
+                        Icon(painterResource("ic_auto_awesome"), contentDescription = "Auto Segment", tint = MaterialTheme.colorScheme.onSurface)
                     }
                     // Settings button
                     IconButton(onClick = { /* Open settings */ }) {
-                        Icon(painterResource("ic_settings"), contentDescription = "Settings", contentColor = MaterialTheme.colorScheme.onSurface)
+                        Icon(painterResource("ic_settings"), contentDescription = "Settings", tint = MaterialTheme.colorScheme.onSurface)
                     }
                 }
             )
@@ -173,7 +177,7 @@ fun TimestampScreen(
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surface,
                     ),
-                    elevation = 4.dp,
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                 ) {
                     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
                         // Mode selector
@@ -182,14 +186,10 @@ fun TimestampScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween,
                         ) {
-                            Text(if (showWordTiming) "Word Timing" else "Line Timing", fontSize = 16.sp, fontWeight = MaterialTheme.typography.headline6?.fontWeight ?? FontWeight.Normal)
-                            androidx.compose.material3.Switch(
+                            Text(if (showWordTiming) "Word Timing" else "Line Timing", fontSize = 16.sp, fontWeight = MaterialTheme.typography.titleMedium.fontWeight ?: FontWeight.Normal)
+                            Switch(
                                 checked = showWordTiming,
                                 onCheckedChange = { showWordTiming = it },
-                                colors = SwitchDefaults.colors(
-                                    thumbColor = MaterialTheme.colorScheme.primary,
-                                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                                ),
                             )
                         }
 
@@ -235,51 +235,49 @@ fun TimestampScreen(
                 contentAlignment = Alignment.Center,
             ) {
                 Row(
-                    horizontalArrangement = Arrangement.spaceEvenly,
+                    horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     // Rewind 10s
-    IconButton(onClick = { mediaPlayer.seekTo(0); currentTime = 0.0 }) {
-                        Icon("ic_replay_10", contentDescription = "Restart", contentColor = MaterialTheme.colorScheme.onSurface)
+                    IconButton(onClick = { mediaPlayer.seekTo(0); currentTime = 0.0 }) {
+                        Icon(painterResource("ic_replay_10"), contentDescription = "Restart", tint = MaterialTheme.colorScheme.onSurface)
                     }
 
-    // Play/Pause with nice animation
-    IconButton(onClick = { isPlaying = !isPlaying }) {
-        Icon(
-            painterResource(if (isPlaying) "ic_pause" else "ic_play_arrow"),
-            contentDescription = if (isPlaying) "Pause" else "Play",
-            contentColor = if (isPlaying) MaterialTheme.colorScheme.primary : MaterialTheme.colorScheme.onSurface
-        )
-    }
+                    // Play/Pause with nice animation
+                    IconButton(onClick = { isPlaying = !isPlaying }) {
+                        Icon(
+                            painter = painterResource(if (isPlaying) "ic_pause" else "ic_play_arrow"),
+                            contentDescription = if (isPlaying) "Pause" else "Play",
+                            tint = if (isPlaying) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                        )
+                    }
 
-    // Forward 10s
-    IconButton(onClick = { mediaPlayer.seekTo((duration * 1000).toInt()); currentTime = duration }) {
-        Icon("ic_forward_10", contentDescription = "End", contentColor = MaterialTheme.colorScheme.onSurface)
-    }
+                    // Forward 10s
+                    IconButton(onClick = { mediaPlayer.seekTo((duration * 1000).toInt()); currentTime = duration }) {
+                        Icon(painterResource("ic_forward_10"), contentDescription = "End", tint = MaterialTheme.colorScheme.onSurface)
+                    }
 
-    // Time display
-    Text(
-        "${formatTime(currentTime)} / ${formatTime(duration)}",
-        fontSize = 14.sp,
-        color = MaterialTheme.colorScheme.onSurface
-    )
+                    // Time display
+                    Text(
+                        "${formatTime(currentTime)} / ${formatTime(duration)}",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
 
-    // Tap timing - prominent button
-    Button(
-        onClick = { setCurrentTimeForSelected() },
-        modifier = Modifier.size(64.dp, 64.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-        ),
-    ) {
-        Text("TAP", fontSize = 16.sp, fontWeight = MaterialTheme.typography.button?.fontWeight ?: FontWeight.Bold)
-    }
+                    // Tap timing - prominent button
+                    Button(
+                        onClick = { setCurrentTimeForSelected() },
+                        modifier = Modifier.size(64.dp, 64.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                        ),
+                    ) {
+                        Text("TAP", fontSize = 16.sp, fontWeight = MaterialTheme.typography.labelLarge.fontWeight ?: FontWeight.Bold)
+                    }
                 }
             }
         }
     }
-}
-}
 }
 
 @Composable

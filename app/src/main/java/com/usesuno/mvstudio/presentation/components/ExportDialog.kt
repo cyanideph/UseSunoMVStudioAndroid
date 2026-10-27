@@ -16,6 +16,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -51,7 +52,7 @@ fun ExportDialog(
                 .fillMaxWidth()
                 .width(420.dp)
                 .padding(24.dp),
-            elevation = 8.dp,
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surface,
             ),
@@ -63,21 +64,21 @@ fun ExportDialog(
                 // Title bar with close button
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                    horizontalArrangement = Arrangement.Between,
+                    horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Text("Export Video", fontSize = 20.sp, fontWeight = FontWeight.Bold)
                     IconButton(onClick = onDismiss) {
                         Icon(
                             painterResource("ic_close"),
                             contentDescription = "Close",
-                            contentColor = MaterialTheme.colorScheme.onSurface
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
 
                 // Form card inside export dialog
                 Card(
-                    elevation = 2.dp,
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surfaceContainer,
                     ),

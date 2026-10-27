@@ -5,6 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -16,6 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import com.usesuno.mvstudio.domain.model.Project
 import com.usesuno.mvstudio.domain.model.AudioFrame
 import com.usesuno.mvstudio.domain.model.AudioAnalysis
@@ -44,12 +48,12 @@ fun StagePreview(
     Box(
         modifier = modifier
             .aspectRatio(aspectRatio)
-            .background(Color.Black)
-            .contentAlignment(Alignment.Center),
+            .background(Color.Black),
+        contentAlignment = Alignment.Center,
     ) {
         // Renderer status indicator
         if (renderer == null) {
-            Text("Select a template to render", alignment = Alignment.Center, modifier = Modifier.size(width = 200.dp, height = 100.dp))
+            Text("Select a template to render", textAlign = TextAlign.Center, modifier = Modifier.size(width = 200.dp, height = 100.dp))
         } else {
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val bounds = android.graphics.Rect(0, 0, size.width.toInt(), size.height.toInt())

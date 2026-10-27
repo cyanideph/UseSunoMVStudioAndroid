@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -14,14 +15,17 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.usesuno.mvstudio.domain.model.*
@@ -59,7 +64,10 @@ fun InspectorPanel(
             horizontalAlignment = Alignment.Start,
         ) {
             // All inspector sections with consistent card styling
-            Card(elevation = 2.dp, colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)) {
+            Card(
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
+            ) {
                 InspectorSection(
                     title = "Template",
                     expanded = "template" in expandedSections,
@@ -153,6 +161,7 @@ fun InspectorPanel(
             }
         }
     }
+}
 
 
 @Composable
@@ -234,12 +243,17 @@ fun SliderRow(label: String, value: Float, min: Float, max: Float, onChange: (Fl
     ) {
         // Label with icon prefix
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.width(110.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start,
         ) {
-            Text(label, modifier = Modifier.width(100.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Icon("ic_tune", contentDescription = "Slider control", contentColor = MaterialTheme.colorScheme.primary)
+            Text(label, modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Icon(
+                painter = painterResource("ic_tune"),
+                contentDescription = "Slider control",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(16.dp)
+            )
         }
 
         Spacer(modifier = Modifier.width(4.dp))
@@ -251,13 +265,18 @@ fun SliderRow(label: String, value: Float, min: Float, max: Float, onChange: (Fl
             modifier = Modifier.weight(1f),
             colors = SliderDefaults.colors(
                 thumbColor = MaterialTheme.colorScheme.primary,
-                activeTrackColor = MaterialTheme.colorScheme.primary.withAlpha(51), // 20% opacity
+                activeTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
                 inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant,
             ),
         )
 
         // Value display
-        Text(String.format("%.2f", value), modifier = Modifier.width(50.dp), alignment = Alignment.End, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(
+            String.format("%.2f", value),
+            modifier = Modifier.width(50.dp),
+            textAlign = TextAlign.End,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 

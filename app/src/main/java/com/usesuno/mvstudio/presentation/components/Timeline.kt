@@ -1,5 +1,8 @@
 package com.usesuno.mvstudio.presentation.components
 
+import android.graphics.Paint
+import android.graphics.RectF
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,11 +19,16 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.nativeCanvas
+import kotlin.math.max
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -74,7 +82,9 @@ fun Timeline(
             ) {
                 // Waveform preview on the left
                 Canvas(modifier = Modifier.fillMaxWidth().height(64.dp)) {
-                    drawWaveformPreview(canvas.nativeCanvas, width = size.width.toInt(), height = 64, project = project)
+                    drawIntoCanvas { canvas ->
+                        drawWaveformPreview(canvas.nativeCanvas, width = size.width.toInt(), height = 64, project = project)
+                    }
                 }
 
                 LazyColumn(modifier = Modifier.fillMaxSize().padding(vertical = 4.dp, horizontal = 8.dp)) {
@@ -84,7 +94,7 @@ fun Timeline(
                             onDelete = {
                                 onProjectChange(project.copy(lines = project.lines.filterNot { it.id == line.id }))
                             },
-                            onToggleSelect = { isSelected -> }
+                            onSelect = {}
                         )
                     }
                 }
@@ -121,7 +131,7 @@ fun Timeline(
                 )
 
                 // End position
-                Text(formatTime(project.audioDuration), fontSize = 12.sp, style = androidx.compose.ui.text.font.FontWeight.Normal)
+                Text(formatTime(project.audioDuration), fontSize = 12.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Normal)
             }
 
             // Time display
@@ -150,55 +160,41 @@ fun LineRow(
     onSelect: () -> Unit,
 ) {
     var selected by remember { mutableStateOf(false) }
-    // Ripple effect on tap
-    val interactionSource = remember { InteractionSource() }
-    var tapped by remember { mutableStateOf(false) }
 
     Card(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)
-            .rippleAlpha(0.1f)
-            .pointerInput(interactionSource) {
-                onClick = { tapped = true }
-            },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 2.dp),
         colors = CardDefaults.cardColors(
             containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
         ),
-        elevation = if (tapped) 4.dp else 1.dp,
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
     ) {
-        // Animate elevation on tap
-        animateElevation(tapped = tapped) {
-            // Card content
-        }
-        .tickedWhilePressed(tapped) {
-            // Ripple effect
-        }
-
         Row(
-            modifier = Modifier.fillMaxWidth().padding(8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
             // Line indicator circle - taps to select
             Box(
                 modifier = Modifier
-                    .width(8.dp)
-                    .height(8.dp)
-                    .background(if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
-                    .border(2.dp, PaintStyle.Stroke, if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
-                )
-                .pointerInput(interactionSource) {
-                    onClick = { onSelect() }
-                }
+                    .size(8.dp)
+                    .background(
+                        if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        shape = RoundedCornerShape(4.dp)
+                    )
+            )
 
             // Line text
             OutlinedTextField(
                 value = line.text,
-                onValueChange = { text ->
-                                    // Handle text edit
-                                },
-                modifier = Modifier.weight(1f).padding(4.dp),
+                onValueChange = { /* text -> Handle text edit */ },
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 8.dp),
                 singleLine = true,
-                enabled = true,
                 textStyle = MaterialTheme.typography.bodySmall,
                 label = { Text("Line text") },
             )
@@ -214,13 +210,12 @@ fun LineRow(
 
             // Delete button with icon toggle
             IconButton(onClick = onDelete, enabled = !selected) {
-                Icon("ic_close", contentDescription = "Delete line", contentColor = MaterialTheme.colorScheme.onSurface)
+                Icon(painterResource("ic_close"), contentDescription = "Delete line", tint = MaterialTheme.colorScheme.onSurface)
             }
         }
     }
 }
 
-@Composable
 fun drawWaveformPreview(
     canvas: android.graphics.Canvas,
     width: Int,
@@ -230,7 +225,7 @@ fun drawWaveformPreview(
     val paint = Paint().apply {
         isAntiAlias = true
         style = Paint.Style.FILL
-        color = MaterialTheme.colorScheme.onSurface
+        color = android.graphics.Color.GRAY
     }
 
     val centerY = height / 2f
@@ -242,15 +237,12 @@ fun drawWaveformPreview(
 
     // Get audio analysis data if available, otherwise use placeholder
     val amplitudes = if (project.lines.isNotEmpty()) {
-        // Use line durations to simulate waveform activity
-        val totalDuration = project.lines.sumBy { it.end - it.start }
+        val totalDuration = max(1.0, project.lines.sumOf { it.end - it.start })
         List(numBars) { index ->
             val progress = (index.toFloat() / numBars) * totalDuration
-            // Find which line this bar corresponds to
             val correspondingLine = project.lines.find { it.start <= progress && it.end >= progress }
             correspondingLine?.let { line ->
-                // Higher amplitude for lines with more words or longer duration
-                (1.0f / (1.0f + (line.end - line.start) / totalDuration * 10)) * 0.5f + 0.1f
+                (1.0f / (1.0f + (line.end - line.start) / totalDuration * 10).toFloat()) * 0.5f + 0.1f
             } ?: 0.1f
         }
     } else {
@@ -264,33 +256,13 @@ fun drawWaveformPreview(
         val yStart = centerY - barHeight
         val yEnd = centerY + barHeight
 
-        // Gradient effect - brighter near center
-        val progress = i.toFloat() / amplitudes.size
-        val barColor = MaterialTheme.colorScheme.primary.copy(alpha = 255.toInt())
+        paint.color = android.graphics.Color.argb(200, 187, 134, 252)
 
         canvas.drawRoundRect(
             RectF(x, yStart, x + barWidth, yEnd),
-            2f, // corner radius
-            paint.apply { color = barColor }
+            2f,
+            2f,
+            paint
         )
-
-        // Small highlight on top of active bars
-        if (amplitude > 0.3f) {
-            val highlightPaint = Paint(paint).apply {
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 180)
-            }
-            canvas.drawRect(x + 1f, yStart, x + barWidth - 1f, yStart + barHeight * 0.3f, highlightPaint)
-        }
-    }
-
-    // Draw play position marker
-    if (project.isAudioPlaying) {
-        val markerPaint = Paint(paint).apply {
-            color = MaterialTheme.colorScheme.error
-            strokeWidth = 2f
-            style = Paint.Style.STROKE
-        }
-        // Placeholder position at 25%
-        canvas.drawLine(width * 0.25f, 0f, width * 0.25f, height.toFloat(), markerPaint)
     }
 }
